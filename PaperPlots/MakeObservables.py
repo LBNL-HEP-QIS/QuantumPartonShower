@@ -30,7 +30,7 @@ def LogThetaMax(myevent,n_I=1,eps=0.001):
 	hist_bins = np.array(hist_bins)
 	centers = (hist_bins[:-1] + hist_bins[1:]) / 2.
 
-	return centers[firstemmit]
+	return centers[::-1][firstemmit]
 
 #Let's run some tests
 myevent = ['f_1','none','phi']
