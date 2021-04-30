@@ -1,42 +1,10 @@
-import qiskit
+import cirq
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-from qiskit import QuantumCircuit
-from qiskit import QuantumRegister
-
-N = 1
-m = 0
-n_i = 1
-L = int(math.floor(math.log(N + n_i, 2))+1)
-
-#Define these global variables for indexing - to convert from cirq's grid qubits 
-p_len = 3
-h_len = L
-w_h_len = L-1
-e_len = 1
-w_len = 5
-np_len = L
-wp_len = L - 1
-na_len = L
-wa_len = L - 1
-nb_len = L
-wb_len = L - 1 
-
-def flatten(l):
-    """
-    :param l: nested list of qubits in order given by fullReg
-    :return: return list of qubits in order of registers as given in qubit dictionary and from MSB to LSB.
-    This used to determine the order of qubits to display in the simulations results
-    For a qubit order [a,b], cirq will output in the form (sum |ab>)
-    """
-    flatList = []
-    for i in l:
-        if isinstance(i, list):
-            flatList.extend(flatten(i))
-        else:
-            flatList.append(i)
-    return flatList
+from cirq import GridQubit, X, CNOT, TOFFOLI, ry
+early = cirq.InsertStrategy.EARLIEST
+new = cirq.InsertStrategy.NEW_THEN_INLINE
 
 def P_f(t, g):
     alpha = g**2 * Phat_f(t)/ (4 * math.pi)
@@ -57,6 +25,7 @@ def P_bos(t, g_a, g_b):
 
 def Delta_bos(t, g_a, g_b):
     return math.exp(P_bos(t, g_a, g_b))
+
 
 def populateParameterLists(N, timeStepList, P_aList, P_bList, P_phiList, Delta_aList, Delta_bList, Delta_phiList, g_a,
                            g_b, eps):
@@ -80,39 +49,20 @@ def populateParameterLists(N, timeStepList, P_aList, P_bList, P_phiList, Delta_a
         Delta_aList.append(Delta_a)
         Delta_bList.append(Delta_b)
         Delta_phiList.append(Delta_phi)
-        
-        
-def allocateQubits(N, n_i, L):
-    nqubits_p = 6
-    nqubits_h = N*math.ceil(math.log2((N + n_i)))
-    nqubits_e = 1
-    nqubits_a_b_phi = L
-    print('nqubits_a_b_phi: ', nqubits_a_b_phi)
-    
-    #to convert from cirq's grid qubits
-    p_len = 3
-    h_len = L
-    w_h_len = L-1
-    
-    pReg = QuantumRegister(nqubits_p)
-    
-    hReg = QuantumRegister(nqubits_h)
-    w_hReg = QuantumRegister(nqubits_h)
-    
-    eReg = QuantumRegister(nqubits_e)
-    wReg = QuantumRegister(5)
-    
-    n_aReg = QuantumRegister(nqubits_a_b_phi)
-    w_aReg = QuantumRegister(nqubits_a_b_phi)
-    
-    n_bReg = QuantumRegister(nqubits_a_b_phi)
-    w_bReg = QuantumRegister(nqubits_a_b_phi)
-    
-    n_phiReg = QuantumRegister(nqubits_a_b_phi)
-    w_phiReg = QuantumRegister(nqubits_a_b_phi)
-    
-    return (pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg)
 
+def allocateQubs(N, n_i, L, pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg):
+    """method 1: Pro: keeps qubits geometrically close (in rectangle), Con: Ordering is weird so hard to debug"""
+    pReg.extend([[GridQubit(i,j) for j in range(3)] for i in range(N+n_i)])
+    hReg.extend([[GridQubit(i,j) for j in range(4, 4+L)] for i in range(N)])
+    w_hReg.extend([GridQubit(N+n_i,j) for j in range(L-1)])
+    eReg.extend([GridQubit(N+n_i,L-1)])
+    wReg.extend([GridQubit(N+n_i,j) for j in range(L,L+5)])
+    n_phiReg.extend([GridQubit(N+n_i+1,j) for j in range(L)])
+    w_phiReg.extend([GridQubit(N+n_i+1,j) for j in range(L,2*L-1)])
+    n_aReg.extend([GridQubit(N+n_i+2,j) for j in range(L)])
+    w_aReg.extend([GridQubit(N+n_i+2,j) for j in range(L,2*L-1)])
+    n_bReg.extend([GridQubit(N+n_i+3,j) for j in range(L)])
+    w_bReg.extend([GridQubit(N+n_i+3,j) for j in range(L,2*L-1)])
 
 def intializeParticles(circuit, pReg, initialParticles):
     """ Apply appropriate X gates to ensure that the p register contains all of the initial particles.
@@ -120,32 +70,26 @@ def intializeParticles(circuit, pReg, initialParticles):
     for currentParticleIndex in range(len(initialParticles)):
         for particleBit in range(3):
             if initialParticles[currentParticleIndex][particleBit] == 1:
-                circuit.x(pReg[currentParticleIndex][particleBit])
+                circuit.append(X(pReg[currentParticleIndex][particleBit]), strategy=early)
 
 
-def flavorControl(circuit, flavor, control, target, ancilla, control_index, target_index, ancilla_index):
+def flavorControl(circuit, flavor, control, target, ancilla):
     """Controlled x onto targetQubit if "control" particle is of the correct flavor"""
     if flavor == "phi":
-        circuit.x(control[control_index + 1])
-        circuit.x(control[control_index + 2])
-        circuit.ccx(control[control_index + 0], control[control_index + 1], ancilla[1])
-        # print(control[control_index + 2])
-        # print(ancilla[1])
-        # print("target index: ", target_index)
-        circuit.ccx(control[control_index + 2], ancilla[1], target[target_index + 0])
+        circuit.append([X(control[1]), X(control[2])], strategy=new)
+        circuit.append(TOFFOLI(control[0], control[1], ancilla), strategy=new)
+        circuit.append(TOFFOLI(control[2], ancilla, target), strategy=new)
         # undo work
-        circuit.ccx(control[control_index + 0], control[control_index + 1], ancilla[1])
-        circuit.x(0)
-        circuit.x(1)
+        circuit.append(TOFFOLI(control[0], control[1], ancilla), strategy=new)
+        circuit.append([X(control[1]), X(control[2])], strategy=new)
     if flavor == "a":
-        circuit.x(0)
-        circuit.ccx(control[control_index + 0], control[control_index + 1], target[target_index + 0])
+        circuit.append(X(control[0]), strategy=new)
+        circuit.append(TOFFOLI(control[0], control[2], target), strategy=new)
         # undo work
-        circuit.x(0)
+        circuit.append(X(control[0]), strategy=new)
     if flavor == "b":
-        circuit.ccx(control[control_index + 0], control[control_index + 2], target[target_index + 0])
-#     print("circuit in flavorcontrol: ",circuit)
-    
+        circuit.append(TOFFOLI(control[0], control[2], target), strategy=new)
+
 def plus1(circuit, l, countReg, workReg, control, ancilla, level):
     """
     Recursively add 1 to the LSB of a register and carries to all bits, if control == 1
@@ -157,63 +101,50 @@ def plus1(circuit, l, countReg, workReg, control, ancilla, level):
     """
     # apply X to LSB
     if level == 0:
-        circuit.cx(control, countReg[0])
+        circuit.append(CNOT(control, countReg[0]), strategy=new)
     if level < l - 1:
         # first level uses CNOT instead of TOFFOLI gate
         if level == 0:
             # move all X gates to first step to avoid unnecesarry gates
-            [circuit.x(qubit) for qubit in countReg]
-            circuit.ccx(countReg[0], control, workReg[0])
+            circuit.append([X(qubit) for qubit in countReg], strategy=new)
+            circuit.append(TOFFOLI(countReg[0], control, workReg[0]), strategy=new)
         else:
-            circuit.ccx(countReg[level], workReg[level - 1], ancilla)
-            circuit.ccx(ancilla, control, workReg[level])
-            circuit.ccx(countReg[level], workReg[level - 1], ancilla)
-        print("countReg ", countReg)
-        print("countReg[level + 1]: ", countReg[level + 1])              
-        circuit.ccx(workReg[level], control, countReg[level + 1])
+            circuit.append(TOFFOLI(countReg[level], workReg[level - 1], ancilla), strategy=new)
+            circuit.append(TOFFOLI(ancilla, control, workReg[level]), strategy=new)
+            circuit.append(TOFFOLI(countReg[level], workReg[level - 1], ancilla), strategy=new)
+
+        circuit.append(TOFFOLI(workReg[level], control, countReg[level + 1]), strategy=new)
         # recursively call next layer
+        print("countReg ", countReg)
         plus1(circuit, l, countReg, workReg, control, ancilla, level + 1)
         # undo work qubits (exact opposite of first 7 lines - undoes calculation)
         if level == 0:
-            circuit.ccx(countReg[0], control, workReg[0])
-            [circuit.x(qubit) for qubit in countReg]
+            circuit.append(TOFFOLI(countReg[0], control, workReg[0]), strategy=new)
+            circuit.append([X(qubit) for qubit in countReg], strategy=new)
         else:
-            circuit.ccx(countReg[level], workReg[level - 1], ancilla)
-            circuit.ccx(ancilla, control, workReg[level])
-            circuit.ccx(countReg[level], workReg[level - 1], ancilla)
+            circuit.append(TOFFOLI(countReg[level], workReg[level - 1], ancilla), strategy=new)
+            circuit.append(TOFFOLI(ancilla, control, workReg[level]), strategy=new)
+            circuit.append(TOFFOLI(countReg[level], workReg[level - 1], ancilla), strategy=new)
 
-        
 def uCount(circuit, m, n_i, l, pReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg):
     """
     Populate the count registers using current particle states.
     Uses wReg[0] as the control and wReg[1] as ancilla qubit for flavorControl and plus1, respectively
     """
     for k in range(n_i+m):
-#         # bosons
-#         flavorControl(circuit, "phi", pReg[k], wReg[0], wReg[1])
-#         plus1(circuit, l, n_phiReg, w_phiReg, wReg[0], wReg[1], 0)
-#         flavorControl(circuit, "phi", pReg[k], wReg[0], wReg[1])
-#         # a fermions
-#         flavorControl(circuit, "a", pReg[k], wReg[0], wReg[1])
-#         plus1(circuit, l, n_aReg, w_aReg, wReg[0], wReg[1], 0)
-#         flavorControl(circuit, "a", pReg[k], wReg[0], wReg[1])
-#         # b fermions
-#         flavorControl(circuit, "b", pReg[k], wReg[0], wReg[1])
-#         plus1(circuit, l, n_bReg, w_bReg, wReg[0], wReg[1], 0)
-#         flavorControl(circuit, "b", pReg[k], wReg[0], wReg[1])
         # bosons
-        flavorControl(circuit, "phi", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "phi", pReg[k], wReg[0], wReg[1])
         plus1(circuit, l, n_phiReg, w_phiReg, wReg[0], wReg[1], 0)
-        flavorControl(circuit, "phi", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "phi", pReg[k], wReg[0], wReg[1])
         # a fermions
-        flavorControl(circuit, "a", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "a", pReg[k], wReg[0], wReg[1])
         plus1(circuit, l, n_aReg, w_aReg, wReg[0], wReg[1], 0)
-        flavorControl(circuit, "a", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "a", pReg[k], wReg[0], wReg[1])
         # b fermions
-        flavorControl(circuit, "b", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "b", pReg[k], wReg[0], wReg[1])
         plus1(circuit, l, n_bReg, w_bReg, wReg[0], wReg[1], 0)
-        flavorControl(circuit, "b", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
-        
+        flavorControl(circuit, "b", pReg[k], wReg[0], wReg[1])
+
 def generateParticleCounts(n_i, m, k):
     """Fill countsList with all combinations of n_phi, n_a, and n_b where each n lies in range [0, n_i+m-k],
     and the sum of all n's lies in range [n_i-k, m+n_i-k], all inclusive
@@ -248,19 +179,21 @@ def numberControl(circuit, l, number, countReg, workReg):
         numberBinary = intToBinary(l, number)
     else:
         numberBinary = number
-    [circuit.x(countReg[i]) for i in range(len(numberBinary)) if numberBinary[i] == 0]
+    circuit.append([X(countReg[i]) for i in range(len(numberBinary)) if numberBinary[i] == 0], strategy=new)
     print("countReg: ", countReg)
     for i in range(len(numberBinary)):
         if numberBinary[i] == 0:
             print("countReg[i]: ", countReg[i])
+    # print("x gate: ", [countReg[i]for i in range(len(numberBinary)) if numberBinary[i] == 0])
     # first level does not use work qubits as control
     if l > 1:
-        print("l>1")
-        circuit.ccx(countReg[0], countReg[1], workReg[0])
+        print("Toffoli: ", countReg[0], countReg[1], workReg[0])
+        circuit.append(TOFFOLI(countReg[0], countReg[1], workReg[0]), strategy=new)
         # subfunction to recursively handle toffoli gates
 
     def binaryToffolis(level):
-        circuit.ccx(countReg[level], workReg[level - 2], workReg[level - 1])
+        print("Toffoli: ", countReg[level], countReg[level-2], workReg[level-1])
+        circuit.append(TOFFOLI(countReg[level], workReg[level - 2], workReg[level - 1]), strategy=new)
         if level < l - 1:
             binaryToffolis(level + 1)
 
@@ -272,6 +205,7 @@ def numberControl(circuit, l, number, countReg, workReg):
         return countReg[0]
     else:
         return workReg[l - 2]
+
 
 def numberControlT(circuit, l, number, countReg, workReg):
     """CLEANS AFTER numberControl operation"""
@@ -286,55 +220,70 @@ def numberControlT(circuit, l, number, countReg, workReg):
         if level < l:
             binaryToffolisT(level + 1)
             # undo
-            circuit.ccx(countReg[level], workReg[level - 2], workReg[level - 1])
+            circuit.append(TOFFOLI(countReg[level], workReg[level - 2], workReg[level - 1]), strategy=new)
+
     if l > 2:
         binaryToffolisT(2)
         # undo
     if l > 1:
-        circuit.ccx(countReg[0], countReg[1], workReg[0])
+        circuit.append(TOFFOLI(countReg[0], countReg[1], workReg[0]), strategy=new)
         # undo
-    [circuit.x(countReg[i]) for i in range(len(numberBinary)) if numberBinary[i] == 0] 
-    
+    circuit.append([X(countReg[i]) for i in range(len(numberBinary)) if numberBinary[i] == 0], strategy=new)
+
 def uE(circuit, l, n_i, m, n_phiReg, w_phiReg, n_aReg, w_aReg, n_bReg, w_bReg, wReg, eReg, Delta_phi, Delta_a, Delta_b):
     """Determine if emission occured in current step m"""
     countsList = generateParticleCounts(n_i, m, 0)
     print("counts list: ", countsList)
     print("length counts list: ", len(countsList))
-    
+
     counts = countsList[3]
     
+#     print(counts)
 #     n_phi, n_a, n_b = counts[0], counts[1], counts[2]
 #     Delta = Delta_phi**n_phi * Delta_a**n_a * Delta_b**n_b
-#     phiControlQub = numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
+#     phiControlQub= numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
 #     aControlQub = numberControl(circuit, l, n_a, n_aReg, w_aReg)
 #     bControlQub = numberControl(circuit, l, n_b, n_bReg, w_bReg)
-#     circuit.ccx(phiControlQub, aControlQub, wReg[0])
-#     circuit.ccx(bControlQub, wReg[0], wReg[1])
-#     print(eReg[0])
-#     circuit.cry((2*math.acos(np.sqrt(Delta))),wReg[1], eReg[0])
+#     print("TOFFOLI ", phiControlQub, aControlQub, wReg[0])
+#     circuit.append(TOFFOLI(phiControlQub, aControlQub, wReg[0]), strategy=new)
+#     print("TOFFOLI ", bControlQub, wReg[0], wReg[1])
+#     circuit.append(TOFFOLI(bControlQub, wReg[0], wReg[1]), strategy=new)
+#     print('ry ', 2*math.acos(np.sqrt(Delta)), wReg[1], eReg[0])
+#     circuit.append(ry(2*math.acos(np.sqrt(Delta))).controlled().on(wReg[1], eReg[0]))
+
 #     #undo
-#     circuit.ccx(bControlQub, wReg[0], wReg[1])
-#     circuit.ccx(phiControlQub, aControlQub, wReg[0])
+#     print("TOFFOLI ", bControlQub, wReg[0], wReg[1])
+#     circuit.append(TOFFOLI(bControlQub, wReg[0], wReg[1]), strategy=new)
+#     print("TOFFOLI ", phiControlQub, aControlQub, wReg[0])
+#     circuit.append(TOFFOLI(phiControlQub, aControlQub, wReg[0]), strategy=new)
 #     numberControlT(circuit, l, n_b, n_bReg, w_bReg)
 #     numberControlT(circuit, l, n_a, n_aReg, w_aReg)
 #     numberControlT(circuit, l, n_phi, n_phiReg, w_phiReg)
 
     for counts in countsList:
+        print(counts)
         n_phi, n_a, n_b = counts[0], counts[1], counts[2]
         Delta = Delta_phi**n_phi * Delta_a**n_a * Delta_b**n_b
-        phiControlQub = numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
+        phiControlQub= numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
         aControlQub = numberControl(circuit, l, n_a, n_aReg, w_aReg)
         bControlQub = numberControl(circuit, l, n_b, n_bReg, w_bReg)
-        circuit.ccx(phiControlQub, aControlQub, wReg[0])
-        circuit.ccx(bControlQub, wReg[0], wReg[1])
-        circuit.cry((2*math.acos(np.sqrt(Delta))),wReg[1], eReg[0])
+        print("TOFFOLI ", phiControlQub, aControlQub, wReg[0])
+        circuit.append(TOFFOLI(phiControlQub, aControlQub, wReg[0]), strategy=new)
+        print("TOFFOLI ", bControlQub, wReg[0], wReg[1])
+        circuit.append(TOFFOLI(bControlQub, wReg[0], wReg[1]), strategy=new)
+        print('ry ', 2*math.acos(np.sqrt(Delta)), wReg[1], eReg[0])
+        circuit.append(ry(2*math.acos(np.sqrt(Delta))).controlled().on(wReg[1], eReg[0]))
+        
         #undo
-        circuit.ccx(bControlQub, wReg[0], wReg[1])
-        circuit.ccx(phiControlQub, aControlQub, wReg[0])
+        print("TOFFOLI ", bControlQub, wReg[0], wReg[1])
+        circuit.append(TOFFOLI(bControlQub, wReg[0], wReg[1]), strategy=new)
+        print("TOFFOLI ", phiControlQub, aControlQub, wReg[0])
+        circuit.append(TOFFOLI(phiControlQub, aControlQub, wReg[0]), strategy=new)
         numberControlT(circuit, l, n_b, n_bReg, w_bReg)
         numberControlT(circuit, l, n_a, n_aReg, w_aReg)
         numberControlT(circuit, l, n_phi, n_phiReg, w_phiReg)
-        
+
+
 def generateGrayList(l, number):
     """
     l is the size of the current count register
@@ -348,19 +297,19 @@ def generateGrayList(l, number):
             grayList.append([index, (list(grayList[-1][1]))])
             grayList[-1][1][index] = 1
     return grayList[1:]
-        
+
+
 def twoLevelControlledRy(circuit, l, angle, k, externalControl, reg, workReg):
     """
     Implements two level Ry rotation from state |0> to |k>, if externalControl qubit is on
     for reference: http://www.physics.udel.edu/~msafrono/650/Lecture%206.pdf
     """
-    # print("l: ", l, "\nk: ", k)
     grayList = generateGrayList(l, k)
     # handle the case where l=0 or 1
     if k==0:
         return
     if l == 1 and k == 1:
-        circuit.cry(angle, externalControl, reg[0])
+        circuit.append(cirq.ry(angle).controlled().on(externalControl, reg[0]))
         return
 
     # swap states according to Gray Code until one step before the end
@@ -370,11 +319,11 @@ def twoLevelControlledRy(circuit, l, angle, k, externalControl, reg, workReg):
         number = number[0:targetQub] + number[targetQub + 1:]
         controlQub = numberControl(circuit, l - 1, number, reg[0:targetQub] + reg[targetQub + 1:], workReg)
         if element == grayList[-1]:  # reached end
-            circuit.ccx(controlQub, externalControl, workReg[l - 2])
-            circuit.cry(angle, workReg[l - 2], reg[targetQub])
-            circuit.ccx(controlQub, externalControl, workReg[l - 2])
+            circuit.append(TOFFOLI(controlQub, externalControl, workReg[l - 2]), strategy=new)
+            circuit.append(cirq.ry(angle).controlled().on(workReg[l - 2], reg[targetQub]))
+            circuit.append(TOFFOLI(controlQub, externalControl, workReg[l - 2]), strategy=new)
         else:  # swap states
-            circuit.cx(controlQub, reg[targetQub])
+            circuit.append(CNOT(controlQub, reg[targetQub]), strategy=new)
         numberControlT(circuit, l - 1, number, reg[0:targetQub] + reg[targetQub + 1:], workReg)
 
     # undo
@@ -383,7 +332,7 @@ def twoLevelControlledRy(circuit, l, angle, k, externalControl, reg, workReg):
         number = element[1]
         number = number[0:targetQub] + number[targetQub + 1:]
         controlQub = numberControl(circuit, l - 1, number, reg[0:targetQub] + reg[targetQub + 1:], workReg)
-        circuit.cx(controlQub, reg[targetQub])
+        circuit.append(CNOT(controlQub, reg[targetQub]), strategy=new)
         numberControlT(circuit, l - 1, number, reg[0:targetQub] + reg[targetQub + 1:], workReg)
     return
 
@@ -404,9 +353,9 @@ def minus1(circuit, l, countReg, workReg, control, ancilla, level):
     Recursively carries an subtraction of 1 to the LSB of a register to all bits if control == 1
     Equivalent to plus1 but with an X applied to all count qubits before and after gate
     """
-    [circuit.x(qubit) for qubit in countReg]
+    circuit.append([X(qubit) for qubit in countReg], strategy=new)
     plus1(circuit, l, countReg, workReg, control, ancilla, level)
-    [circuit.x(qubit) for qubit in countReg]
+    circuit.append([X(qubit) for qubit in countReg], strategy=new)
 
 
 def U_h(circuit, l, n_i, m, n_phiReg, w_phiReg, n_aReg, w_aReg, n_bReg, w_bReg, wReg, eReg, pReg, hReg, w_hReg, P_phi,
@@ -422,87 +371,83 @@ def U_h(circuit, l, n_i, m, n_phiReg, w_phiReg, n_aReg, w_aReg, n_bReg, w_bReg, 
             # for flavor in ['phi', 'a', 'b']:
                 angle = U_hAngle(flavor, n_phi, n_a, n_b, P_phi, P_a, P_b)
                 phiControl = numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
-                print("qiskit phiControl: ", phiControl)
+                print("cirq phiControl: ",phiControl)
                 # aControl = numberControl(circuit, l, n_a, n_aReg, w_aReg)
-                # print("qiskit aControl: ", aControl)
+                # print("cirq aControl: ", aControl)
                 # # bControl = numberControl(circuit, l, n_b, n_bReg, w_bReg)
-                # print("qiskit wReg[0]: ", wReg[0])
-                # circuit.ccx(phiControl, aControl, wReg[0])
-                # circuit.ccx(bControl, wReg[0], wReg[1])
-                #
-                # flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 2, 4) # wReg[4] is work qubit but is reset to 0
-                # circuit.ccx(wReg[1], wReg[2], wReg[3])
-                # circuit.ccx(eReg[0], wReg[3], wReg[4])
-                #
-                # twoLevelControlledRy(circuit, l, angle, k+1, wReg, hReg, w_hReg)
-                #
-                # circuit.ccx(eReg[0], wReg[3], wReg[4])  # next steps undo work qubits
-                # circuit.ccx(wReg[1], wReg[2], wReg[3])
-                # flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 2, 4) # wReg[4] is work qubit but is reset to 0
-                # circuit.ccx(bControl, wReg[0], wReg[1])
-                # circuit.ccx(phiControl, aControl, wReg[0])
-                # numberControlT(circuit, l, n_b, n_bReg, w_bReg)
-                # numberControlT(circuit, l, n_a, n_aReg, w_aReg)
-                # numberControlT(circuit, l, n_phi, n_phiReg, w_phiReg)
+                # print("cirq wReg[0]: ", wReg[0])
+                # circuit.append(TOFFOLI(phiControl, aControl, wReg[0]), strategy=new)
+#                 circuit.append(TOFFOLI(bControl, wReg[0], wReg[1]), strategy=new)
+#                 flavorControl(circuit, flavor, pReg[k], wReg[2], wReg[4]) # wReg[4] is work qubit but is reset to 0
+#                 circuit.append(TOFFOLI(wReg[1], wReg[2], wReg[3]), strategy=new)
+#                 circuit.append(TOFFOLI(eReg[0], wReg[3], wReg[4]), strategy=new)
+#
+# #                 print("m ", m)
+# #                 print("hReg[m]: ",hReg[m])
+#
+#                 twoLevelControlledRy(circuit, l, angle, k+1, wReg[4], hReg[m], w_hReg)
+#
+#                 circuit.append(TOFFOLI(eReg[0], wReg[3], wReg[4]), strategy=new)  # next steps undo work qubits
+#                 circuit.append(TOFFOLI(wReg[1], wReg[2], wReg[3]), strategy=new)
+#                 flavorControl(circuit, flavor, pReg[k], wReg[2], wReg[4])
+#                 circuit.append(TOFFOLI(bControl, wReg[0], wReg[1]), strategy=new)
+#                 circuit.append(TOFFOLI(phiControl, aControl, wReg[0]), strategy=new)
+#                 numberControlT(circuit, l, n_b, n_bReg, w_bReg)
+#                 numberControlT(circuit, l, n_a, n_aReg, w_aReg)
+#                 numberControlT(circuit, l, n_phi, n_phiReg, w_phiReg)
 
         # subtract from the counts register depending on which flavor particle emitted
         for flavor, countReg, workReg in zip(['phi', 'a', 'b'], [n_phiReg, n_aReg, n_bReg], [w_phiReg, w_aReg, w_bReg]):
-            flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 0, 1) # wReg[4] is work qubit but is reset to 0
+            flavorControl(circuit, flavor, pReg[k], wReg[0], wReg[1])
             minus1(circuit, l, countReg, workReg, wReg[0], wReg[1], 0)
-            flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 0, 1) # wReg[4] is work qubit but is reset to 0
+            flavorControl(circuit, flavor, pReg[k], wReg[0], wReg[1])
 
     # apply x on eReg if hReg[m] = 0, apply another x so we essentially control on not 0 instead of 0
-    isZeroControl = numberControl(circuit, l, 0, hReg, w_hReg)
-    circuit.cx(isZeroControl, eReg[0])
-    circuit.x(eReg[0])
-    numberControlT(circuit, l, 0, hReg, w_hReg)
-    
+    isZeroControl = numberControl(circuit, l, 0, hReg[m], w_hReg)
+    circuit.append(CNOT(isZeroControl, eReg[0]))
+    circuit.append(X(eReg[0]), strategy=new)
+    numberControlT(circuit, l, 0, hReg[m], w_hReg)
+
 def updateParticles(circuit, l, n_i, m, k, pReg, wReg, controlQub, g_a, g_b):
     """Updates particle if controlQub is on"""
-    oldParticleReg = pReg
-    newParticleReg = pReg
+    oldParticleReg = pReg[k]
+    newParticleReg = pReg[n_i+m]
     #first gate in paper U_p
-    circuit.ccx(controlQub, oldParticleReg[k*p_len + 2], newParticleReg[n_i+m+0])
+    circuit.append(TOFFOLI(controlQub, oldParticleReg[2], newParticleReg[0]), strategy=new)
     #second gate in paper (undoes work register immediately)
-    circuit.x(oldParticleReg[k*p_len+1])
-    circuit.x(oldParticleReg[k*p_len+2])
-    circuit.ccx(controlQub, oldParticleReg[k*p_len+2], wReg[0])
-    circuit.ccx(wReg[0], oldParticleReg[k*p_len+1], wReg[1])
-    circuit.ccx(wReg[1], oldParticleReg[k*p_len+0], newParticleReg[n_i+m+2])
-    circuit.ccx(wReg[0], oldParticleReg[k*p_len+1], wReg[1])
-    circuit.ccx(controlQub, oldParticleReg[k*p_len+2], wReg[0])
-    circuit.x(oldParticleReg[k*p_len+1])
-    circuit.x(oldParticleReg[k*p_len+2])
+    circuit.append([X(oldParticleReg[1]), X(oldParticleReg[2])], strategy=new)
+    circuit.append(TOFFOLI(controlQub, oldParticleReg[2], wReg[0]), strategy=new)
+    circuit.append(TOFFOLI(wReg[0], oldParticleReg[1], wReg[1]), strategy=new)
+    circuit.append(TOFFOLI(wReg[1], oldParticleReg[0], newParticleReg[2]), strategy=new)
+    circuit.append(TOFFOLI(wReg[0], oldParticleReg[1], wReg[1]), strategy=new)
+    circuit.append(TOFFOLI(controlQub, oldParticleReg[2], wReg[0]), strategy=new)
+    circuit.append([X(oldParticleReg[1]), X(oldParticleReg[2])], strategy=new)
     #third gate in paper
-    circuit.ccx(controlQub, newParticleReg[n_i+m+2], oldParticleReg[k+2])
+    circuit.append(TOFFOLI(controlQub, newParticleReg[2], oldParticleReg[2]), strategy=new)
     #fourth and fifth gate in paper (then undoes work register)
-    circuit.ccx(controlQub, newParticleReg[n_i+m+2], wReg[0])
-    #check the format for the control state here
-    circuit.ch(wReg[0], newParticleReg[n_i+m+1]) 
+    circuit.append(TOFFOLI(controlQub, newParticleReg[2], wReg[0]), strategy=new)
+    circuit.append(cirq.H.controlled().on(wReg[0], newParticleReg[1]))
     angle = (2 * np.arccos(g_a/np.sqrt(g_a**2 + g_b**2)))
-    circuit.cry(angle, wReg[0], newParticleReg[n_i+m+0])
-    circuit.ccx(controlQub, newParticleReg[n_i+m+2], wReg[0])
+    circuit.append(cirq.ry(angle).controlled().on(wReg[0], newParticleReg[0]))
+    circuit.append(TOFFOLI(controlQub, newParticleReg[2], wReg[0]), strategy=new)
     #sixth and seventh gate in paper (then undoes work register)
-    circuit.x(newParticleReg[n_i+m+0])
-    circuit.x(newParticleReg[n_i+m+1])
-    circuit.ccx(newParticleReg[n_i+m+1], newParticleReg[n_i+m+2], wReg[0])
-    circuit.ccx(controlQub, wReg[0], oldParticleReg[k+1])
-    circuit.ccx(newParticleReg[n_i+m+1], newParticleReg[n_i+m+2], wReg[0])
-    circuit.ccx(newParticleReg[n_i+m+0], newParticleReg[n_i+m+2], wReg[0])
-    circuit.ccx(controlQub, wReg[0], oldParticleReg[k+0])
-    circuit.ccx(newParticleReg[n_i+m+0], newParticleReg[n_i+m+2], wReg[0])
-    circuit.x(newParticleReg[n_i+m+0])
-    circuit.d(newParticleReg[n_i+m+1])
+    circuit.append([X(newParticleReg[0]), X(newParticleReg[1])], strategy=new)
+    circuit.append(TOFFOLI(newParticleReg[1], newParticleReg[2], wReg[0]), strategy=new)
+    circuit.append(TOFFOLI(controlQub, wReg[0], oldParticleReg[1]), strategy=new)
+    circuit.append(TOFFOLI(newParticleReg[1], newParticleReg[2], wReg[0]), strategy=new)
+    circuit.append(TOFFOLI(newParticleReg[0], newParticleReg[2], wReg[0]), strategy=new)
+    circuit.append(TOFFOLI(controlQub, wReg[0], oldParticleReg[0]), strategy=new)
+    circuit.append(TOFFOLI(newParticleReg[0], newParticleReg[2], wReg[0]), strategy=new)
+    circuit.append([X(newParticleReg[0]), X(newParticleReg[1])], strategy=new)
 
 def U_p(circuit, l, n_i, m, pReg, hReg, w_hReg, wReg, g_a, g_b):
     """Applies U_p from paper"""
     for k in range(0, n_i + m):
-#         controlQub = numberControl(circuit, l, k+1, hReg[m], w_hReg)
-        controlQub = numberControl(circuit, l, k+1, hReg, w_hReg)
+        controlQub = numberControl(circuit, l, k+1, hReg[m], w_hReg)
         updateParticles(circuit, l, n_i, m, k, pReg, wReg, controlQub, g_a, g_b)
         numberControlT(circuit, l, k+1, hReg[m], w_hReg)
-        
-        
+
+
 def createCircuit(n_i, N, eps, g_1, g_2, g_12, initialParticles):
     """
     Create full circuit with n_i initial particles and N steps
@@ -510,7 +455,7 @@ def createCircuit(n_i, N, eps, g_1, g_2, g_12, initialParticles):
     n_i: number of initial particles
     N: number of steps
     eps, g_1, g_2, g_12: pre-chosen qft parameters
-    initialParticles: list of initial particles, each particle in a list of qubits [MSB middle bit, LSB]
+    initialParticles: list of initial particles, each particle in a binary list of qubits [MSB middle bit, LSB]
     (opposite order of the paper pg 6 - e.g a f_a fermion is [0,0,1])
     in order [particle 1, particle 2, ..... particle n_i]
     """
@@ -529,13 +474,13 @@ def createCircuit(n_i, N, eps, g_1, g_2, g_12, initialParticles):
                            g_b, eps)
 
     # allocate and populate registers
-    pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg = allocateQubits(N, n_i, L)
-
+    pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg = [], [], [], [], [], [], [], [], [], [], []
+    allocateQubs(1, n_i, L, pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg)
     qubits = {'pReg': pReg, 'hReg': hReg, 'w_hReg': w_hReg, 'eReg': eReg, 'wReg': wReg, 'n_aReg': n_aReg,
                'w_aReg': w_aReg, 'n_bReg': n_bReg, 'w_bReg': w_bReg, 'n_phiReg': n_phiReg, 'w_phiReg': w_phiReg}
 
     # create circuit object and initialize particles
-    circuit = qiskit.QuantumCircuit()
+    circuit = cirq.Circuit()
     intializeParticles(circuit, pReg, initialParticles)
         
     print("pReg", pReg)
@@ -546,8 +491,7 @@ def createCircuit(n_i, N, eps, g_1, g_2, g_12, initialParticles):
 
         # R^(m) - rotate every particle p_k from 1,2 to a,b basis (step 1)
         for p_k in pReg:
-            # circuit.append(ry(2*math.asin(-u)).controlled().on(p_k[2], p_k[0]))
-            circuit.cry((2*math.asin(-u)), p_k[2], p_k[0])
+            circuit.append(ry(2*math.asin(-u)).controlled().on(p_k[2], p_k[0]))
 
         # populate count register (step 2)
         uCount(circuit, m, n_i, l, pReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg)
@@ -565,9 +509,8 @@ def createCircuit(n_i, N, eps, g_1, g_2, g_12, initialParticles):
 
         # R^-(m) rotate every particle p_k from a,b to 1,2 basis (step 6)
         for p_k in pReg:
-            # circuit.append(ry(2*math.asin(u)).controlled().on(p_k[2], p_k[0]))
-            circuit.cry((2*math.asin(u)),p_k[2], p_k[0])
+            circuit.append(ry(2*math.asin(u)).controlled().on(p_k[2], p_k[0]))
     
-    print('generated circuit on', len(flatten(list(qubits.values()))), 'qubits') 
+#     print('generated circuit on', len(flatten(list(qubits.values()))), 'qubits') 
 
     return circuit, qubits
