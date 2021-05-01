@@ -2,6 +2,7 @@ import cirq
 import math
 import create_circuit as cc
 from cirq import Simulator
+from cirq import GridQubit, X, CNOT, TOFFOLI, ry
 
 from qiskit import QuantumCircuit, QuantumRegister, execute, Aer
 from qiskit.providers.aer import QasmSimulator
@@ -33,6 +34,18 @@ eps = .001
 circuit = cirq.Circuit()
 simulator = Simulator()
 
+circuit.append([[X((qubit)) for qubit in pReg[i]] for i in range(N+n_i)])
+circuit.append([[X((qubit)) for qubit in hReg[i]] for i in range(N)])
+w_hReg.extend([GridQubit(N+n_i,j) for j in range(L-1)])
+eReg.extend([GridQubit(N+n_i,L-1)])
+wReg.extend([GridQubit(N+n_i,j) for j in range(L,L+5)])
+n_phiReg.extend([GridQubit(N+n_i+1,j) for j in range(L)])
+w_phiReg.extend([GridQubit(N+n_i+1,j) for j in range(L,2*L-1)])
+n_aReg.extend([GridQubit(N+n_i+2,j) for j in range(L)])
+w_aReg.extend([GridQubit(N+n_i+2,j) for j in range(L,2*L-1)])
+n_bReg.extend([GridQubit(N+n_i+3,j) for j in range(L)])
+w_bReg.extend([GridQubit(N+n_i+3,j) for j in range(L,2*L-1)])
+
 timeStepList, P_aList, P_bList, P_phiList, Delta_aList, Delta_bList, Delta_phiList = [], [], [], [], [], [], []
 cc.populateParameterLists(N, timeStepList, P_aList, P_bList, P_phiList, Delta_aList, Delta_bList,
                        Delta_phiList, g_a, g_b, eps)
@@ -41,6 +54,7 @@ cc.U_h(circuit, l, n_i, m, n_phiReg, w_phiReg, n_aReg, w_aReg, n_bReg, w_bReg, w
             P_phiList[0], P_aList[0], P_bList[0])
 
 result = simulator.simulate(circuit)
+
 
 print(result.final_state_vector)
 
@@ -61,9 +75,9 @@ qcc.populateParameterLists(N, timeStepList2, P_aList2, P_bList2, P_phiList2, Del
 qcc.U_h(circuit2, l, n_i, m, n_phiReg2, w_phiReg2, n_aReg2, w_aReg2, n_bReg2, w_bReg2, wReg2, eReg2, pReg2, hReg2, w_hReg2,
             P_phiList2[0], P_aList2[0], P_bList2[0])
 
-# result2 = execute(circuit2, simulator2).result()
-# statevector2 = result2.get_statevector(circuit2)
+result2 = execute(circuit2, simulator2).result()
+statevector2 = result2.get_statevector(circuit2)
 
-# print(statevector2)
+print("qiskit statevector: ",statevector2)
 
 print(circuit2)

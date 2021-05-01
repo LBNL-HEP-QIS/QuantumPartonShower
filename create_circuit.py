@@ -370,15 +370,17 @@ def U_h(circuit, l, n_i, m, n_phiReg, w_phiReg, n_aReg, w_aReg, n_bReg, w_bReg, 
             for flavor in ['phi']:
             # for flavor in ['phi', 'a', 'b']:
                 angle = U_hAngle(flavor, n_phi, n_a, n_b, P_phi, P_a, P_b)
+                # add in x gates for checking
+
                 phiControl = numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
                 print("cirq phiControl: ",phiControl)
-                # aControl = numberControl(circuit, l, n_a, n_aReg, w_aReg)
-                # print("cirq aControl: ", aControl)
-                # # bControl = numberControl(circuit, l, n_b, n_bReg, w_bReg)
-                # print("cirq wReg[0]: ", wReg[0])
+                aControl = numberControl(circuit, l, n_a, n_aReg, w_aReg)
+                print("cirq aControl: ", aControl)
+                # bControl = numberControl(circuit, l, n_b, n_bReg, w_bReg)
+                print("cirq wReg[0]: ", wReg[0])
                 # circuit.append(TOFFOLI(phiControl, aControl, wReg[0]), strategy=new)
 #                 circuit.append(TOFFOLI(bControl, wReg[0], wReg[1]), strategy=new)
-#                 flavorControl(circuit, flavor, pReg[k], wReg[2], wReg[4]) # wReg[4] is work qubit but is reset to 0
+                flavorControl(circuit, flavor, pReg[k], wReg[2], wReg[4]) # wReg[4] is work qubit but is reset to 0
 #                 circuit.append(TOFFOLI(wReg[1], wReg[2], wReg[3]), strategy=new)
 #                 circuit.append(TOFFOLI(eReg[0], wReg[3], wReg[4]), strategy=new)
 #

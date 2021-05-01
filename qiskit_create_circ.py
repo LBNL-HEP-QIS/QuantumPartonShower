@@ -423,14 +423,14 @@ def U_h(circuit, l, n_i, m, n_phiReg, w_phiReg, n_aReg, w_aReg, n_bReg, w_bReg, 
                 angle = U_hAngle(flavor, n_phi, n_a, n_b, P_phi, P_a, P_b)
                 phiControl = numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
                 print("qiskit phiControl: ", phiControl)
-                # aControl = numberControl(circuit, l, n_a, n_aReg, w_aReg)
-                # print("qiskit aControl: ", aControl)
-                # # bControl = numberControl(circuit, l, n_b, n_bReg, w_bReg)
-                # print("qiskit wReg[0]: ", wReg[0])
+                aControl = numberControl(circuit, l, n_a, n_aReg, w_aReg)
+                print("qiskit aControl: ", aControl)
+                # bControl = numberControl(circuit, l, n_b, n_bReg, w_bReg)
+                print("qiskit wReg[0]: ", wReg[0])
                 # circuit.ccx(phiControl, aControl, wReg[0])
                 # circuit.ccx(bControl, wReg[0], wReg[1])
                 #
-                # flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 2, 4) # wReg[4] is work qubit but is reset to 0
+                flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 2, 4) # wReg[4] is work qubit but is reset to 0
                 # circuit.ccx(wReg[1], wReg[2], wReg[3])
                 # circuit.ccx(eReg[0], wReg[3], wReg[4])
                 #
