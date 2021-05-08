@@ -7,7 +7,7 @@ from qiskit import QuantumRegister
 
 N = 1
 m = 0
-n_i = 1
+n_i = 3
 L = int(math.floor(math.log(N + n_i, 2))+1)
 
 #Define these global variables for indexing - to convert from cirq's grid qubits 
@@ -95,8 +95,10 @@ def allocateQubits(N, n_i, L):
     w_h_len = L-1
     
     pReg = QuantumRegister(nqubits_p)
+    # pReg = QuantumRegister(3)
     
     hReg = QuantumRegister(nqubits_h)
+    # hReg = QuantumRegister()
     w_hReg = QuantumRegister(nqubits_h)
     
     eReg = QuantumRegister(nqubits_e)
@@ -120,7 +122,7 @@ def intializeParticles(circuit, pReg, initialParticles):
     for currentParticleIndex in range(len(initialParticles)):
         for particleBit in range(3):
             if initialParticles[currentParticleIndex][particleBit] == 1:
-                circuit.x(pReg[currentParticleIndex][particleBit])
+                circuit.x(pReg[currentParticleIndex*p_len + particleBit])
 
 
 def flavorControl(circuit, flavor, control, target, ancilla, control_index, target_index, ancilla_index):
@@ -128,18 +130,18 @@ def flavorControl(circuit, flavor, control, target, ancilla, control_index, targ
     if flavor == "phi":
         circuit.x(control[control_index + 1])
         circuit.x(control[control_index + 2])
-        circuit.ccx(control[control_index + 0], control[control_index + 1], ancilla[1])
+        circuit.ccx(control[control_index + 0], control[control_index + 1], ancilla[ancilla_index])
         # print(control[control_index + 2])
         # print(ancilla[1])
         # print("target index: ", target_index)
-        circuit.ccx(control[control_index + 2], ancilla[1], target[target_index + 0])
+        circuit.ccx(control[control_index + 2], ancilla[ancilla_index], target[target_index + 0])
         # undo work
-        circuit.ccx(control[control_index + 0], control[control_index + 1], ancilla[1])
-        circuit.x(0)
+        circuit.ccx(control[control_index + 0], control[control_index + 1], ancilla[ancilla_index])
         circuit.x(1)
+        circuit.x(2)
     if flavor == "a":
         circuit.x(0)
-        circuit.ccx(control[control_index + 0], control[control_index + 1], target[target_index + 0])
+        circuit.ccx(control[control_index + 0], control[control_index + 2], target[target_index + 0])
         # undo work
         circuit.x(0)
     if flavor == "b":
@@ -168,8 +170,7 @@ def plus1(circuit, l, countReg, workReg, control, ancilla, level):
             circuit.ccx(countReg[level], workReg[level - 1], ancilla)
             circuit.ccx(ancilla, control, workReg[level])
             circuit.ccx(countReg[level], workReg[level - 1], ancilla)
-        print("countReg ", countReg)
-        print("countReg[level + 1]: ", countReg[level + 1])              
+
         circuit.ccx(workReg[level], control, countReg[level + 1])
         # recursively call next layer
         plus1(circuit, l, countReg, workReg, control, ancilla, level + 1)
@@ -189,30 +190,18 @@ def uCount(circuit, m, n_i, l, pReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phi
     Uses wReg[0] as the control and wReg[1] as ancilla qubit for flavorControl and plus1, respectively
     """
     for k in range(n_i+m):
-#         # bosons
-#         flavorControl(circuit, "phi", pReg[k], wReg[0], wReg[1])
-#         plus1(circuit, l, n_phiReg, w_phiReg, wReg[0], wReg[1], 0)
-#         flavorControl(circuit, "phi", pReg[k], wReg[0], wReg[1])
-#         # a fermions
-#         flavorControl(circuit, "a", pReg[k], wReg[0], wReg[1])
-#         plus1(circuit, l, n_aReg, w_aReg, wReg[0], wReg[1], 0)
-#         flavorControl(circuit, "a", pReg[k], wReg[0], wReg[1])
-#         # b fermions
-#         flavorControl(circuit, "b", pReg[k], wReg[0], wReg[1])
-#         plus1(circuit, l, n_bReg, w_bReg, wReg[0], wReg[1], 0)
-#         flavorControl(circuit, "b", pReg[k], wReg[0], wReg[1])
         # bosons
-        flavorControl(circuit, "phi", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "phi", pReg, wReg, wReg, (k*p_len), 0, 1)
         plus1(circuit, l, n_phiReg, w_phiReg, wReg[0], wReg[1], 0)
-        flavorControl(circuit, "phi", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "phi", pReg, wReg, wReg, (k*p_len), 0, 1)
         # a fermions
-        flavorControl(circuit, "a", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "a", pReg, wReg, wReg, (k*p_len), 0, 1)
         plus1(circuit, l, n_aReg, w_aReg, wReg[0], wReg[1], 0)
-        flavorControl(circuit, "a", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "a", pReg, wReg, wReg, (k*p_len), 0, 1)
         # b fermions
-        flavorControl(circuit, "b", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "b", pReg, wReg, wReg, (k*p_len), 0, 1)
         plus1(circuit, l, n_bReg, w_bReg, wReg[0], wReg[1], 0)
-        flavorControl(circuit, "b", pReg, wReg, wReg, (k*p_len), (0*w_len), (1*w_len))
+        flavorControl(circuit, "b", pReg, wReg, wReg, (k*p_len), 0, 1)
         
 def generateParticleCounts(n_i, m, k):
     """Fill countsList with all combinations of n_phi, n_a, and n_b where each n lies in range [0, n_i+m-k],
@@ -249,13 +238,9 @@ def numberControl(circuit, l, number, countReg, workReg):
     else:
         numberBinary = number
     [circuit.x(countReg[i]) for i in range(len(numberBinary)) if numberBinary[i] == 0]
-    print("countReg: ", countReg)
-    for i in range(len(numberBinary)):
-        if numberBinary[i] == 0:
-            print("countReg[i]: ", countReg[i])
+
     # first level does not use work qubits as control
     if l > 1:
-        print("l>1")
         circuit.ccx(countReg[0], countReg[1], workReg[0])
         # subfunction to recursively handle toffoli gates
 
@@ -265,7 +250,6 @@ def numberControl(circuit, l, number, countReg, workReg):
             binaryToffolis(level + 1)
 
     if l > 2:
-        print("l>2")
         binaryToffolis(2)
     # return qubit containing outcome of the operation
     if l == 1:
@@ -298,26 +282,6 @@ def numberControlT(circuit, l, number, countReg, workReg):
 def uE(circuit, l, n_i, m, n_phiReg, w_phiReg, n_aReg, w_aReg, n_bReg, w_bReg, wReg, eReg, Delta_phi, Delta_a, Delta_b):
     """Determine if emission occured in current step m"""
     countsList = generateParticleCounts(n_i, m, 0)
-    print("counts list: ", countsList)
-    print("length counts list: ", len(countsList))
-    
-    counts = countsList[3]
-    
-#     n_phi, n_a, n_b = counts[0], counts[1], counts[2]
-#     Delta = Delta_phi**n_phi * Delta_a**n_a * Delta_b**n_b
-#     phiControlQub = numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
-#     aControlQub = numberControl(circuit, l, n_a, n_aReg, w_aReg)
-#     bControlQub = numberControl(circuit, l, n_b, n_bReg, w_bReg)
-#     circuit.ccx(phiControlQub, aControlQub, wReg[0])
-#     circuit.ccx(bControlQub, wReg[0], wReg[1])
-#     print(eReg[0])
-#     circuit.cry((2*math.acos(np.sqrt(Delta))),wReg[1], eReg[0])
-#     #undo
-#     circuit.ccx(bControlQub, wReg[0], wReg[1])
-#     circuit.ccx(phiControlQub, aControlQub, wReg[0])
-#     numberControlT(circuit, l, n_b, n_bReg, w_bReg)
-#     numberControlT(circuit, l, n_a, n_aReg, w_aReg)
-#     numberControlT(circuit, l, n_phi, n_phiReg, w_phiReg)
 
     for counts in countsList:
         n_phi, n_a, n_b = counts[0], counts[1], counts[2]
@@ -376,7 +340,6 @@ def twoLevelControlledRy(circuit, l, angle, k, externalControl, reg, workReg):
         else:  # swap states
             circuit.cx(controlQub, reg[targetQub])
         numberControlT(circuit, l - 1, number, reg[0:targetQub] + reg[targetQub + 1:], workReg)
-
     # undo
     for element in reverse(grayList[:-1]):
         targetQub = element[0]
@@ -390,12 +353,17 @@ def twoLevelControlledRy(circuit, l, angle, k, externalControl, reg, workReg):
 def U_hAngle(flavor, n_phi, n_a, n_b, P_phi, P_a, P_b):
     """Determine angle of rotation used in U_h"""
     denominator = n_phi * P_phi + n_a * P_a + n_b * P_b
+    print("denom: ", denominator)
+    print("n vals: ", n_a, n_b, n_phi)
     if denominator == 0: # occurs if we are trying the case of no particles remaining (n_a = n_b = n_phi = 0)
         return 0
     flavorStringToP = {'phi': P_phi, 'a': P_a, 'b': P_b}
+    print("numerator: ",flavorStringToP)
+    print("flavor: ", flavor)
     emissionAmplitude = np.sqrt(flavorStringToP[flavor] / denominator)
     # correct for arcsin input greater than 1 errors for various input combinations that are irrelevant anyway
     emissionAmplitude = min(1, emissionAmplitude)
+    print("angle: ", 2 * np.arcsin(emissionAmplitude))
     return 2 * np.arcsin(emissionAmplitude)
 
 
@@ -415,43 +383,47 @@ def U_h(circuit, l, n_i, m, n_phiReg, w_phiReg, n_aReg, w_aReg, n_bReg, w_bReg, 
     # for k in range(n_i + m):
     for k in range(1):
         countsList = generateParticleCounts(n_i, m, k)  # reduce the available number of particles
-        for counts in [countsList[0]]:
+        for counts in countsList:
             n_phi, n_a, n_b = counts[0], counts[1], counts[2]
             # controlled R-y from |0> to |k> on all qubits with all possible angles depending on n_phi, n_a, n_b, and flavor
-            for flavor in ['phi']:
-            # for flavor in ['phi', 'a', 'b']:
-                angle = U_hAngle(flavor, n_phi, n_a, n_b, P_phi, P_a, P_b)
-                phiControl = numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
-                print("qiskit phiControl: ", phiControl)
-                aControl = numberControl(circuit, l, n_a, n_aReg, w_aReg)
-                print("qiskit aControl: ", aControl)
-                # bControl = numberControl(circuit, l, n_b, n_bReg, w_bReg)
-                print("qiskit wReg[0]: ", wReg[0])
-                # circuit.ccx(phiControl, aControl, wReg[0])
-                # circuit.ccx(bControl, wReg[0], wReg[1])
-                #
-                flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 2, 4) # wReg[4] is work qubit but is reset to 0
-                # circuit.ccx(wReg[1], wReg[2], wReg[3])
-                # circuit.ccx(eReg[0], wReg[3], wReg[4])
-                #
-                # twoLevelControlledRy(circuit, l, angle, k+1, wReg, hReg, w_hReg)
-                #
-                # circuit.ccx(eReg[0], wReg[3], wReg[4])  # next steps undo work qubits
-                # circuit.ccx(wReg[1], wReg[2], wReg[3])
-                # flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 2, 4) # wReg[4] is work qubit but is reset to 0
-                # circuit.ccx(bControl, wReg[0], wReg[1])
-                # circuit.ccx(phiControl, aControl, wReg[0])
-                # numberControlT(circuit, l, n_b, n_bReg, w_bReg)
-                # numberControlT(circuit, l, n_a, n_aReg, w_aReg)
-                # numberControlT(circuit, l, n_phi, n_phiReg, w_phiReg)
+            # for flavor in ['phi']:
+            if n_phi == 3 and n_a == 0 and n_b ==0:
+                print("after if : ", n_phi, n_a, n_b)
 
-        # subtract from the counts register depending on which flavor particle emitted
-        for flavor, countReg, workReg in zip(['phi', 'a', 'b'], [n_phiReg, n_aReg, n_bReg], [w_phiReg, w_aReg, w_bReg]):
-            flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 0, 1) # wReg[4] is work qubit but is reset to 0
-            minus1(circuit, l, countReg, workReg, wReg[0], wReg[1], 0)
-            flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 0, 1) # wReg[4] is work qubit but is reset to 0
+                for flavor in ['phi', 'a', 'b']:
 
-    # apply x on eReg if hReg[m] = 0, apply another x so we essentially control on not 0 instead of 0
+                    angle = U_hAngle(flavor, n_phi, n_a, n_b, P_phi, P_a, P_b)
+                    phiControl = numberControl(circuit, l, n_phi, n_phiReg, w_phiReg)
+                    print("qiskit phiControl: ", phiControl)
+                    aControl = numberControl(circuit, l, n_a, n_aReg, w_aReg)
+                    print("qiskit aControl: ", aControl)
+                    bControl = numberControl(circuit, l, n_b, n_bReg, w_bReg)
+
+                    circuit.ccx(phiControl, aControl, wReg[0])
+                    circuit.ccx(bControl, wReg[0], wReg[1])
+
+                    flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 2, 4) # wReg[4] is work qubit but is reset to 0
+                    circuit.ccx(wReg[1], wReg[2], wReg[3])
+                    circuit.ccx(eReg[0], wReg[3], wReg[4])
+
+                    twoLevelControlledRy(circuit, l, angle, k+1, wReg[4], hReg, w_hReg)
+
+                    circuit.ccx(eReg[0], wReg[3], wReg[4])  # next steps undo work qubits
+                    circuit.ccx(wReg[1], wReg[2], wReg[3])
+                    flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 2, 4) # wReg[4] is work qubit but is reset to 0
+                    circuit.ccx(bControl, wReg[0], wReg[1])
+                    circuit.ccx(phiControl, aControl, wReg[0])
+                    numberControlT(circuit, l, n_b, n_bReg, w_bReg)
+                    numberControlT(circuit, l, n_a, n_aReg, w_aReg)
+                    numberControlT(circuit, l, n_phi, n_phiReg, w_phiReg)
+
+            # subtract from the counts register depending on which flavor particle emitted
+            for flavor, countReg, workReg in zip(['phi', 'a', 'b'], [n_phiReg, n_aReg, n_bReg], [w_phiReg, w_aReg, w_bReg]):
+                flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 0, 1) # wReg[4] is work qubit but is reset to 0
+                minus1(circuit, l, countReg, workReg, wReg[0], wReg[1], 0)
+                flavorControl(circuit, flavor, pReg, wReg, wReg, (k*p_len), 0, 1) # wReg[4] is work qubit but is reset to 0
+
+   # apply x on eReg if hReg[m] = 0, apply another x so we essentially control on not 0 instead of 0
     isZeroControl = numberControl(circuit, l, 0, hReg, w_hReg)
     circuit.cx(isZeroControl, eReg[0])
     circuit.x(eReg[0])
@@ -462,37 +434,41 @@ def updateParticles(circuit, l, n_i, m, k, pReg, wReg, controlQub, g_a, g_b):
     oldParticleReg = pReg
     newParticleReg = pReg
     #first gate in paper U_p
-    circuit.ccx(controlQub, oldParticleReg[k*p_len + 2], newParticleReg[n_i+m+0])
+    print("k: ",k)
+    print("plen: ",p_len)
+    print(oldParticleReg)
+
+    circuit.ccx(controlQub, oldParticleReg[k*p_len + 2], newParticleReg[(n_i+m)*p_len+0])
     #second gate in paper (undoes work register immediately)
     circuit.x(oldParticleReg[k*p_len+1])
     circuit.x(oldParticleReg[k*p_len+2])
     circuit.ccx(controlQub, oldParticleReg[k*p_len+2], wReg[0])
     circuit.ccx(wReg[0], oldParticleReg[k*p_len+1], wReg[1])
-    circuit.ccx(wReg[1], oldParticleReg[k*p_len+0], newParticleReg[n_i+m+2])
+    circuit.ccx(wReg[1], oldParticleReg[k*p_len+0], newParticleReg[(n_i+m)*p_len+2])
     circuit.ccx(wReg[0], oldParticleReg[k*p_len+1], wReg[1])
     circuit.ccx(controlQub, oldParticleReg[k*p_len+2], wReg[0])
     circuit.x(oldParticleReg[k*p_len+1])
     circuit.x(oldParticleReg[k*p_len+2])
     #third gate in paper
-    circuit.ccx(controlQub, newParticleReg[n_i+m+2], oldParticleReg[k+2])
+    circuit.ccx(controlQub, newParticleReg[(n_i+m)*p_len+2], oldParticleReg[k+2])
     #fourth and fifth gate in paper (then undoes work register)
-    circuit.ccx(controlQub, newParticleReg[n_i+m+2], wReg[0])
+    circuit.ccx(controlQub, newParticleReg[(n_i+m)*p_len+2], wReg[0])
     #check the format for the control state here
-    circuit.ch(wReg[0], newParticleReg[n_i+m+1]) 
+    circuit.ch(wReg[0], newParticleReg[(n_i+m)*p_len+1])
     angle = (2 * np.arccos(g_a/np.sqrt(g_a**2 + g_b**2)))
-    circuit.cry(angle, wReg[0], newParticleReg[n_i+m+0])
-    circuit.ccx(controlQub, newParticleReg[n_i+m+2], wReg[0])
+    circuit.cry(angle, wReg[0], newParticleReg[(n_i+m)*p_len+0])
+    circuit.ccx(controlQub, newParticleReg[(n_i+m)*p_len+2], wReg[0])
     #sixth and seventh gate in paper (then undoes work register)
-    circuit.x(newParticleReg[n_i+m+0])
-    circuit.x(newParticleReg[n_i+m+1])
-    circuit.ccx(newParticleReg[n_i+m+1], newParticleReg[n_i+m+2], wReg[0])
-    circuit.ccx(controlQub, wReg[0], oldParticleReg[k+1])
-    circuit.ccx(newParticleReg[n_i+m+1], newParticleReg[n_i+m+2], wReg[0])
-    circuit.ccx(newParticleReg[n_i+m+0], newParticleReg[n_i+m+2], wReg[0])
-    circuit.ccx(controlQub, wReg[0], oldParticleReg[k+0])
-    circuit.ccx(newParticleReg[n_i+m+0], newParticleReg[n_i+m+2], wReg[0])
-    circuit.x(newParticleReg[n_i+m+0])
-    circuit.d(newParticleReg[n_i+m+1])
+    circuit.x(newParticleReg[(n_i+m)*p_len+0])
+    circuit.x(newParticleReg[(n_i+m)*p_len+1])
+    circuit.ccx(newParticleReg[(n_i+m)*p_len+1], newParticleReg[(n_i+m)*p_len+2], wReg[0])
+    circuit.ccx(controlQub, wReg[0], oldParticleReg[k*p_len+1])
+    circuit.ccx(newParticleReg[(n_i+m)*p_len+1], newParticleReg[(n_i+m)*p_len+2], wReg[0])
+    circuit.ccx(newParticleReg[(n_i+m)*p_len+0], newParticleReg[(n_i+m)*p_len+2], wReg[0])
+    circuit.ccx(controlQub, wReg[0], oldParticleReg[k*p_len+0])
+    circuit.ccx(newParticleReg[(n_i+m)*p_len+0], newParticleReg[(n_i+m)*p_len+2], wReg[0])
+    circuit.x(newParticleReg[(n_i+m)*p_len+0])
+    circuit.x(newParticleReg[(n_i+m)*p_len+1])
 
 def U_p(circuit, l, n_i, m, pReg, hReg, w_hReg, wReg, g_a, g_b):
     """Applies U_p from paper"""
@@ -535,19 +511,20 @@ def createCircuit(n_i, N, eps, g_1, g_2, g_12, initialParticles):
                'w_aReg': w_aReg, 'n_bReg': n_bReg, 'w_bReg': w_bReg, 'n_phiReg': n_phiReg, 'w_phiReg': w_phiReg}
 
     # create circuit object and initialize particles
-    circuit = qiskit.QuantumCircuit()
+    circuit = QuantumCircuit(pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg)
+
     intializeParticles(circuit, pReg, initialParticles)
         
-    print("pReg", pReg)
 
     # begin stepping through subcircuits
     for m in range(N):
         l = int(math.floor(math.log(m + n_i, 2)) + 1)
 
         # R^(m) - rotate every particle p_k from 1,2 to a,b basis (step 1)
-        for p_k in pReg:
-            # circuit.append(ry(2*math.asin(-u)).controlled().on(p_k[2], p_k[0]))
-            circuit.cry((2*math.asin(-u)), p_k[2], p_k[0])
+        index = 0
+        while index < pReg.size:
+            circuit.cry((2*math.asin(-u)), pReg[index+2], pReg[index+0])
+            index += p_len
 
         # populate count register (step 2)
         uCount(circuit, m, n_i, l, pReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg)
@@ -564,9 +541,10 @@ def createCircuit(n_i, N, eps, g_1, g_2, g_12, initialParticles):
         U_p(circuit, l, n_i, m, pReg, hReg, w_hReg, wReg, g_a, g_b)
 
         # R^-(m) rotate every particle p_k from a,b to 1,2 basis (step 6)
-        for p_k in pReg:
+        while index < pReg.size:
             # circuit.append(ry(2*math.asin(u)).controlled().on(p_k[2], p_k[0]))
-            circuit.cry((2*math.asin(u)),p_k[2], p_k[0])
+            circuit.cry((2*math.asin(u)),pReg[index+2], pReg[index+0])
+            index += p_len
     
     print('generated circuit on', len(flatten(list(qubits.values()))), 'qubits') 
 
