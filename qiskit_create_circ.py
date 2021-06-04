@@ -92,7 +92,7 @@ def allocateQubits(N, n_i, L):
 
     
     pReg = QuantumRegister(nqubits_p)
-    # pReg = QuantumRegister(3)
+    # pReg = QuantumRegister(6)
     
     hReg = QuantumRegister(nqubits_h)
     w_hReg = QuantumRegister(nqubits_h)
