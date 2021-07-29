@@ -8,7 +8,7 @@ class QuantumPartonShower:
     Args:
         N (int): number of steps
         ni (int): number of initial particles
-        m (int): the mth step ranging from 0 to N-1
+        m (int): the mth step ranging from 0 to N-1 (not needed)
     """
     def __init__(self, N, ni, m):
         self._N = N
@@ -555,10 +555,11 @@ class QuantumPartonShower:
             self.U_p(self._circuit, l, self._ni, m, self.pReg, self.hReg, self.w_hReg, self.wReg, g_a, g_b)
 
             # R^-(m) rotate every particle p_k from a,b to 1,2 basis (step 6)
-            while index < self.pReg.size:
+            index2 = 0
+            while index2 < self.pReg.size:
                 # circuit.append(ry(2*math.asin(u)).controlled().on(p_k[2], p_k[0]))
-                self._circuit.cry((2 * math.asin(u)), self.pReg[index + 2], self.pReg[index + 0])
-                index += self._p_len
+                self._circuit.cry((2 * math.asin(u)), self.pReg[index2 + 2], self.pReg[index2 + 0])
+                index2 += self._p_len
 
         print('generated circuit on', len(self.flatten(list(qubits.values()))), 'qubits')
 
