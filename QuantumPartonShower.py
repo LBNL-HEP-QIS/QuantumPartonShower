@@ -563,6 +563,7 @@ class QuantumPartonShower:
 
         print('generated circuit on', len(self.flatten(list(qubits.values()))), 'qubits')
 
+        
         return self._circuit, qubits
 
     def simulate(self, type, shots=None, position=False):
