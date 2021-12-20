@@ -1,7 +1,8 @@
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 from qiskit import QuantumCircuit, Aer, execute
-from qiskit import QuantumRegister
+from qiskit import QuantumRegister, ClassicalRegister
 
 class QuantumPartonShower:
     """
@@ -10,10 +11,9 @@ class QuantumPartonShower:
         ni (int): number of initial particles
         m (int): the mth step ranging from 0 to N-1 (not needed)
     """
-    def __init__(self, N, ni, m):
+    def __init__(self, N, ni):
         self._N = N
         self._ni = ni
-        self._m = m
         self._L = int(math.floor(math.log(N + ni, 2))+1)
 
         # Define these variables for indexing - to convert from cirq's grid qubits (see explaination in notebook)
@@ -33,8 +33,12 @@ class QuantumPartonShower:
         self.pReg, self.hReg, self.w_hReg, self.eReg, self.wReg, self.n_aReg, self.w_aReg,self.n_bReg, self.w_bReg, \
         self.n_phiReg, self.w_phiReg = self.allocateQubits(N, ni, self._L)
 
-        self._circuit = QuantumCircuit(self.pReg, self.hReg, self.w_hReg, self.eReg, self.wReg, self.n_aReg,
-                                       self.w_aReg, self.n_bReg, self.w_bReg, self.n_phiReg, self.w_phiReg)
+        #print(self.pReg, self.hReg, self.w_hReg, self.eReg, self.wReg, self.n_aReg,
+        #                               self.w_aReg, self.n_bReg, self.w_bReg, self.n_phiReg, self.w_phiReg)
+        #self._circuit = QuantumCircuit(self.pReg, self.hReg, self.w_hReg, self.eReg, self.wReg, self.n_aReg,
+        #                               self.w_aReg, self.n_bReg, self.w_bReg, self.n_phiReg, self.w_phiReg)
+        self._circuit = QuantumCircuit(self.wReg, self.pReg, self.hReg, self.eReg, self.n_phiReg, self.n_aReg,
+                                       self.n_bReg, self.w_hReg, self.w_phiReg, self.w_aReg, self.w_bReg)
 
 
 
@@ -52,6 +56,23 @@ class QuantumPartonShower:
             else:
                 flatList.append(i)
         return flatList
+
+    def ptype(self, x):
+        #parses particle type
+        if x=='000':
+            return '0'    
+        if x=='001':
+            return 'phi'   
+        if x=='100':
+            return 'f1'   
+        if x=='101':
+            return 'f2'   
+        if x=='110':
+            return 'af1'   
+        if x=='111':
+            return 'af2'   
+        else:
+            return "NAN"
 
     def P_f(self, t, g):
         alpha = g ** 2 * self.Phat_f(t) / (4 * math.pi)
@@ -99,36 +120,38 @@ class QuantumPartonShower:
 
     def allocateQubits(self, N, n_i, L):
         nqubits_p = 3 * (N + n_i)
-        nqubits_h = N * math.ceil(math.log2((N + n_i)))
+        #nqubits_h = N * math.ceil(math.log2((N + n_i)))
+        nqubits_h = N * int(math.floor(math.log2((N + n_i)) + 1))
         nqubits_e = 1
         nqubits_a_b_phi = L
 
-        pReg = QuantumRegister(nqubits_p)
+        pReg = QuantumRegister(nqubits_p, 'p')
         # pReg = QuantumRegister(6)
 
-        hReg = QuantumRegister(nqubits_h)
-        w_hReg = QuantumRegister(nqubits_h)
+        hReg = QuantumRegister(nqubits_h, 'h')
+        #w_hReg = QuantumRegister(nqubits_h, 'w_h')
+        w_hReg = QuantumRegister(L, 'w_h')
 
-        eReg = QuantumRegister(nqubits_e)
-        wReg = QuantumRegister(5)  # we use all 5 of these work register qubits, but not sure why it is 5
+        eReg = QuantumRegister(nqubits_e, 'e')
+        wReg = QuantumRegister(5, 'w')  # we use all 5 of these work register qubits, but not sure why it is 5
 
-        n_aReg = QuantumRegister(nqubits_a_b_phi)
-        w_aReg = QuantumRegister(nqubits_a_b_phi)
+        n_aReg = QuantumRegister(nqubits_a_b_phi, 'n_a')
+        w_aReg = QuantumRegister(nqubits_a_b_phi, 'w_a')
 
-        n_bReg = QuantumRegister(nqubits_a_b_phi)
-        w_bReg = QuantumRegister(nqubits_a_b_phi)
+        n_bReg = QuantumRegister(nqubits_a_b_phi, 'n_b')
+        w_bReg = QuantumRegister(nqubits_a_b_phi, 'w_b')
 
-        n_phiReg = QuantumRegister(nqubits_a_b_phi)
-        w_phiReg = QuantumRegister(nqubits_a_b_phi)
-
+        n_phiReg = QuantumRegister(nqubits_a_b_phi, 'n_phi')
+        w_phiReg = QuantumRegister(nqubits_a_b_phi, 'w_phi')
+        #print(pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg)
         return (pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg)
 
-    def intializeParticles(self, circuit, pReg, initialParticles):
+    def initializeParticles(self, circuit, pReg, initialParticles):
         """ Apply appropriate X gates to ensure that the p register contains all of the initial particles.
             The p registers contains particles in the form of a list [LSB, middle bit, MSB]"""
         for currentParticleIndex in range(len(initialParticles)):
             for particleBit in range(3):
-                if initialParticles[currentParticleIndex][particleBit] == 1:
+                if int(initialParticles[currentParticleIndex][particleBit]) == 1:
                     circuit.x(pReg[currentParticleIndex * self._p_len + particleBit])
 
     def flavorControl(self, circuit, flavor, control, target, ancilla, control_index, target_index, ancilla_index):
@@ -140,13 +163,17 @@ class QuantumPartonShower:
             circuit.ccx(control[control_index + 2], ancilla[ancilla_index], target[target_index + 0])
             # undo work
             circuit.ccx(control[control_index + 0], control[control_index + 1], ancilla[ancilla_index])
-            circuit.x(1)
-            circuit.x(2)
+            #circuit.x(1)
+            #circuit.x(2)
+            circuit.x(control[control_index + 1])
+            circuit.x(control[control_index + 2])
         if flavor == "a":
-            circuit.x(0)
+            #circuit.x(0)
+            circuit.x(control[control_index + 0])
             circuit.ccx(control[control_index + 0], control[control_index + 2], target[target_index + 0])
             # undo work
-            circuit.x(0)
+            #circuit.x(0)
+            circuit.x(control[control_index + 0])
         if flavor == "b":
             circuit.ccx(control[control_index + 0], control[control_index + 2], target[target_index + 0])
 
@@ -238,7 +265,8 @@ class QuantumPartonShower:
             numberBinary = self.intToBinary(l, number)
         else:
             numberBinary = number
-
+        #print('length of numberBinary: ' + str(len(numberBinary)))
+        #print('length of countReg: ' + str(len(countReg)))
         [circuit.x(countReg[i]) for i in range(len(numberBinary)) if numberBinary[i] == 0]
 
         # first level does not use work qubits as control
@@ -322,8 +350,10 @@ class QuantumPartonShower:
         Implements two level Ry rotation from state |0> to |k>, if externalControl qubit is on
         for reference: http://www.physics.udel.edu/~msafrono/650/Lecture%206.pdf
         """
-        # print("l: ", l, "\nk: ", k)
+        #print("Generating gray list with     l= %d, k= %d" %(l, k))
         grayList = self.generateGrayList(l, k)
+        #print('Graylist: ' + str(grayList))
+        #print('reg: ' + str(reg))
         # handle the case where l=0 or 1
         if k == 0:
             return
@@ -383,12 +413,19 @@ class QuantumPartonShower:
             P_phi,
             P_a, P_b):
         """Implement U_h from paper"""
+        print('\nm= ' + str(m))
+        #if m == 2:
+            #print(hReg)
+            #print('h_len= ' + str(self._h_len))
+            #print(hReg[4:6])
+            #print(hReg[m*self._h_len : (m+1)*self._h_len])
         for k in range(n_i + m):
             # for k in range(1):
             print("k: ", k)
             countsList = self.generateParticleCounts(n_i, m, k)  # reduce the available number of particles
 
             for counts in countsList:
+                #print('counts: ' + str(counts))
                 n_phi, n_a, n_b = counts[0], counts[1], counts[2]
                 # controlled R-y from |0> to |k> on all qubits with all possible angles depending on n_phi, n_a, n_b, and flavor
                 # for flavor in ['phi']:
@@ -416,7 +453,9 @@ class QuantumPartonShower:
                     circuit.ccx(wReg[1], wReg[2], wReg[3])
                     circuit.ccx(eReg[0], wReg[3], wReg[4])
 
-                    self.twoLevelControlledRy(circuit, l, angle, k + 1, wReg[4], hReg, w_hReg)
+                    #print('flavor: ' + flavor)
+                    #self.twoLevelControlledRy(circuit, l, angle, k + 1, wReg[4], hReg, w_hReg)
+                    self.twoLevelControlledRy(circuit, l, angle, k + 1, wReg[4], hReg[m*self._h_len : (m+1)*self._h_len], w_hReg)
 
                     circuit.ccx(eReg[0], wReg[3], wReg[4])  # next steps undo work qubits
                     circuit.ccx(wReg[1], wReg[2], wReg[3])
@@ -438,10 +477,14 @@ class QuantumPartonShower:
                               1)  # wReg[4] is work qubit but is reset to 0
 
         # apply x on eReg if hReg[m] = 0, apply another x so we essentially control on not 0 instead of 0
-        isZeroControl = self.numberControl(circuit, l, 0, hReg, w_hReg)
+        isZeroControl = self.numberControl(circuit, l, 0, hReg[m*self._L : (m+1)*self._L], w_hReg)
         circuit.cx(isZeroControl, eReg[0])
         circuit.x(eReg[0])
-        self.numberControlT(circuit, l, 0, hReg, w_hReg)
+        self.numberControlT(circuit, l, 0, hReg[m*self._L : (m+1)*self._L], w_hReg)
+
+        # Alternate: use reset
+        #circuit.reset(eReg)
+
 
     def updateParticles(self, circuit, l, n_i, m, k, pReg, wReg, controlQub, g_a, g_b):
         """Updates particle if controlQub is on"""
@@ -469,7 +512,7 @@ class QuantumPartonShower:
         circuit.x(oldParticleReg[k * self._p_len + 1])
         circuit.x(oldParticleReg[k * self._p_len + 2])
         # third gate in paper
-        circuit.ccx(controlQub, newParticleReg[(n_i + m) * self._p_len + 2], oldParticleReg[k + 2])
+        circuit.ccx(controlQub, newParticleReg[(n_i + m) * self._p_len + 2], oldParticleReg[k * self._p_len + 2]) ############################
         # fourth and fifth gate in paper (then undoes work register)
         circuit.ccx(controlQub, newParticleReg[(n_i + m) * self._p_len + 2], wReg[0])
         # check the format for the control state here
@@ -492,10 +535,12 @@ class QuantumPartonShower:
     def U_p(self, circuit, l, n_i, m, pReg, hReg, w_hReg, wReg, g_a, g_b):
         """Applies U_p from paper"""
         for k in range(0, n_i + m):
-            #         controlQub = numberControl(circuit, l, k+1, hReg[m], w_hReg)
-            controlQub = self.numberControl(circuit, l, k + 1, hReg, w_hReg)
+            #controlQub = self.numberControl(circuit, l, k + 1, hReg, w_hReg)
+            controlQub = self.numberControl(circuit, l, k + 1, hReg[m*self._h_len : (m+1)*self._h_len], w_hReg)
             self.updateParticles(circuit, l, n_i, m, k, pReg, wReg, controlQub, g_a, g_b)
-            self.numberControlT(circuit, l, k + 1, hReg[m:(m + self._h_len)], w_hReg)
+            #self.numberControlT(circuit, l, k + 1, hReg, w_hReg)
+            #self.numberControlT(circuit, l, k + 1, hReg[m:(m + self._h_len)], w_hReg)
+            self.numberControlT(circuit, l, k + 1, hReg[m*self._h_len : (m+1)*self._h_len], w_hReg)
 
     def createCircuit(self, eps, g_1, g_2, g_12, initialParticles):
         """
@@ -504,7 +549,7 @@ class QuantumPartonShower:
         n_i: number of initial particles
         N: number of steps
         eps, g_1, g_2, g_12: pre-chosen qft parameters
-        initialParticles: list of initial particles, each particle in a list of qubits [MSB middle bit, LSB]
+        initialParticles: list of initial particles, each particle in a list of qubits [MSB, middle bit, LSB]
         (opposite order of the paper pg 6 - e.g a f_a fermion is [0,0,1])
         in order [particle 1, particle 2, ..... particle n_i]
         """
@@ -525,7 +570,7 @@ class QuantumPartonShower:
                   'n_aReg': self.n_aReg, 'w_aReg': self.w_aReg, 'n_bReg': self.n_bReg, 'w_bReg': self.w_bReg,
                   'n_phiReg': self.n_phiReg, 'w_phiReg': self.w_phiReg}
 
-        self.intializeParticles(self._circuit, self.pReg, initialParticles)
+        self.initializeParticles(self._circuit, self.pReg, initialParticles)
 
         # begin stepping through subcircuits
         for m in range(self._N):
@@ -547,6 +592,9 @@ class QuantumPartonShower:
                Delta_phiList[m], Delta_aList[m], Delta_bList[m])
 
             # choose a particle to split (step 4)
+            #if m == 2:
+                #print('l, ni, m, pReg, hReg, P_phiList[m], P_aList[m], P_bList[m] ...')
+                #print(l, self._ni, m, self.pReg, self.hReg, P_phiList[2], P_aList[2], P_bList[2])
             self.U_h(self._circuit, l, self._ni, m, self.n_phiReg, self.w_phiReg, self.n_aReg, self.w_aReg, self.n_bReg,
                      self.w_bReg, self.wReg, self.eReg, self.pReg, self.hReg, self.w_hReg,
                 P_phiList[m], P_aList[m], P_bList[m])
@@ -566,7 +614,97 @@ class QuantumPartonShower:
         
         return self._circuit, qubits
 
+
+    def allocateClbits(self, N, n_i, L):
+        nbits_p = 3 * (N + n_i)
+        #nbits_h = N * math.ceil(math.log2((N + n_i)))
+        nbits_h = N * int(math.floor(math.log2(N + n_i)) + 1)
+        nbits_e = 1
+        nbits_a_b_phi = L
+
+        wReg_cl = ClassicalRegister(5, 'w_cl')  # we use all 5 of these work register qubits, but not sure why it is 5
+        pReg_cl = []
+        for j in range(N + n_i):
+            pReg_cl.append(ClassicalRegister(3, 'p%d_cl' %(j)))
+        hReg_cl = []
+        for j in range(N):
+            hReg_cl.append(ClassicalRegister(int(math.floor(math.log2(N + n_i)) + 1), 'h%d_cl' %(j)))
+        eReg_cl = ClassicalRegister(nbits_e, 'e_cl')
+        n_phiReg_cl = ClassicalRegister(nbits_a_b_phi, 'nphi_cl')
+        n_aReg_cl = ClassicalRegister(nbits_a_b_phi, 'na_cl')
+        n_bReg_cl = ClassicalRegister(nbits_a_b_phi, 'nb_cl')
+
+        #w_hReg_cl = ClassicalRegister(nbits_h, 'wh_cl')
+        w_hReg_cl = ClassicalRegister(L, 'wh_cl')
+        w_phiReg_cl = ClassicalRegister(nbits_a_b_phi, 'wphi_cl')
+        w_aReg_cl = ClassicalRegister(nbits_a_b_phi, 'wa_cl')
+        w_bReg_cl = ClassicalRegister(nbits_a_b_phi, 'wb_cl')
+
+        return (wReg_cl, pReg_cl, hReg_cl, eReg_cl, n_phiReg_cl, n_aReg_cl, n_bReg_cl, 
+                w_hReg_cl, w_phiReg_cl, w_aReg_cl, w_bReg_cl)
+
+
     def simulate(self, type, shots=None, position=False):
+        """
+        :param type: either the qasm simulaot or the statevector simulator
+        :param shots: if using the qasm simulator the number of shots needs to be specified
+        :param position: the statevector is very long, so if position=True the function will print the value and
+        position of tbe non-zero elements
+        :return: either counts (qasm) or the statevector
+        """
+        if type == 'qasm':
+            #simulator = Aer.get_backend('qasm_simulator')
+            simulator = Aer.get_backend('aer_simulator_matrix_product_state')
+
+            (wReg_cl, pReg_cl, hReg_cl, # Note: pReg_cl, hReg_cl aer lists of ClassicalRegisters
+             eReg_cl, n_phiReg_cl, n_aReg_cl, 
+             n_bReg_cl, w_hReg_cl, w_phiReg_cl, w_aReg_cl, w_bReg_cl) = self.allocateClbits(self._N, self._ni, self._L)
+            
+            self._circuit.add_register(wReg_cl)
+            for j in range(self._N + self._ni):
+                self._circuit.add_register(pReg_cl[j])
+            for j in range(self._N):
+                self._circuit.add_register(hReg_cl[j])
+            self._circuit.add_register(eReg_cl)
+            self._circuit.add_register(n_phiReg_cl)
+            self._circuit.add_register(n_aReg_cl)
+            self._circuit.add_register(n_bReg_cl)
+            self._circuit.add_register(w_hReg_cl)
+            self._circuit.add_register(w_phiReg_cl)
+            self._circuit.add_register(w_aReg_cl)
+            self._circuit.add_register(w_bReg_cl)
+
+            self._circuit.measure(self.wReg, wReg_cl)
+            for j in range(self._N + self._ni):
+                self._circuit.measure(self.pReg[3*j : 3*(j+1)], pReg_cl[j])
+            for j in range(self._N):
+                self._circuit.measure(self.hReg[self._L*j : self._L*(j+1)], hReg_cl[j])
+            self._circuit.measure(self.eReg, eReg_cl)
+            self._circuit.measure(self.n_phiReg, n_phiReg_cl)
+            self._circuit.measure(self.n_aReg, n_aReg_cl)
+            self._circuit.measure(self.n_bReg, n_bReg_cl)
+            self._circuit.measure(self.w_hReg, w_hReg_cl)
+            self._circuit.measure(self.w_phiReg, w_phiReg_cl)
+            self._circuit.measure(self.w_aReg, w_aReg_cl)
+            self._circuit.measure(self.w_bReg, w_bReg_cl)
+
+            job = execute(self._circuit, simulator, shots=shots)
+            result = job.result()
+            counts = result.get_counts(self._circuit)
+            return counts
+        elif type == 'statevector':
+            simulator = Aer.get_backend('statevector_simulator')
+            result = execute(self._circuit, simulator).result()
+            statevector = result.get_statevector(self._circuit)
+            if position:
+                [print("position of non zero element: ", list(statevector).index(i), "\nvalue: ",
+                       i, "\nabsolute value: ", abs(i)) for i in statevector if abs(i) > 10 ** (-5)]
+            return statevector
+        else:
+            print("choose 'qasm' or 'statevector'")
+
+
+    def simulate2(self, type, shots=None, position=False):
         """
         :param type: either the qasm simulaot or the statevector simulator
         :param shots: if using the qasm simulator the number of shots needs to be specified
@@ -591,4 +729,266 @@ class QuantumPartonShower:
             return statevector
         else:
             print("choose 'qasm' or 'statevector'")
+
+
+
+    def bar_plot(self, counts, events, eps, g1, g2, counts2= None):
+        mycounter = 0
+
+        firstisf1_y = []
+        firstisf1_ey = []
+        firstisf1_x = []
+
+        firstisf2_y = []
+        firstisf2_ey = []
+        firstisf2_x = []
+
+        if counts2 != None:
+            firstisf1b_y = []
+            firstisf1b_ey = []
+            firstisf1b_x = []
+
+            firstisf2b_x = []
+            firstisf2b_y = []
+            firstisf2b_ey = []
+
+        mymap = {}
+        mymap['0','0']=1
+        mymap['phi','0']=2
+        mymap['0','phi']=2
+        mymap['phi','phi']=3
+        mymap['af1','f1']=4
+        mymap['f1','af1']=4
+        mymap['af2','f2']=5
+        mymap['f2','af2']=5
+        mymap['af2','f1']=6
+        mymap['f2','af1']=6
+        mymap['af1','f2']=6
+        mymap['f1','af2']=6
+
+        firstemission = [0,0,0,0]
+        if counts2 != None:
+            firstemission2 = [0,0,0,0]
+
+        for c in counts:
+            print(mycounter, c, self.ptype(c.split()[10]), self.ptype(c.split()[11]), self.ptype(c.split()[12]), counts[c])
+            mycounter+=1
+
+            if c.split()[9]=='0':
+                if c.split()[8]=='01' or c.split()[8]=='10' or c.split()[8]=='11':
+                    firstemission[0]+= counts[c]/events
+                else:
+                    firstemission[1]+= counts[c]/events
+            else:
+                if c.split()[8]=='01' or c.split()[8]=='10' or c.split()[8]=='11':
+                    firstemission[2]+= counts[c]/events
+                else:
+                    firstemission[3]+= counts[c]/events
+
+            if (self.ptype(c.split()[12])=='f1'):
+                firstisf1_y+=[100*counts[c]/events]
+                firstisf1_ey+=[100*counts[c]**0.5/events]
+                firstisf1_x+=[-0.2+mymap[self.ptype(c.split()[10]), self.ptype(c.split()[11])]]
+                pass
+            if (self.ptype(c.split()[12])=='f2'):
+                firstisf2_y+=[100*counts[c]/events]
+                firstisf2_ey+=[100*counts[c]**0.5/events]
+                firstisf2_x+=[0.0+mymap[self.ptype(c.split()[10]), self.ptype(c.split()[11])]]
+                pass
+
+        if counts2 != None:
+            for c in counts2:
+
+                if c.split()[9]=='0':
+                    if c.split()[8]=='01' or c.split()[8]=='10' or c.split()[8]=='11':
+                        firstemission2[0]+=counts2[c]/events
+                    else:
+                        firstemission2[1]+=counts2[c]/events
+                else:
+                    if c.split()[8]=='01' or c.split()[8]=='10' or c.split()[8]=='11':
+                        firstemission2[2]+=counts2[c]/events
+                    else:
+                        firstemission2[3]+=counts2[c]/events
+
+                if (self.ptype(c.split()[12])=='f1'):
+                    firstisf1b_y+=[100*counts2[c]/events]
+                    firstisf1b_ey+=[100*counts2[c]**0.5/events]
+                    firstisf1b_x+=[0.2+mymap[self.ptype(c.split()[10]),self.ptype(c.split()[11])]]
+                    pass
+                if (self.ptype(c.split()[12])=='f2'):
+                    firstisf2b_y+=[100*counts2[c]/events]
+                    firstisf2b_ey+=[100*counts2[c]**0.5/events]
+                    firstisf2b_x+=[0.2+mymap[self.ptype(c.split()[10]),self.ptype(c.split()[11])]]
+                    pass
+
+
+        emits_classical = []
+        Nev_classical = events
+        for i in range(2):
+
+            t_up2 = eps**((i)/2)
+            t_mid2 =  eps**((i+0.5)/2)  
+            t_low2 =  eps**((i+1)/2)  
+
+            deltaL2 = math.sqrt(self.Delta_f(t_low2, g1)) / math.sqrt(self.Delta_f(t_up2, g1))
+            pL2 = 1. - deltaL2*deltaL2
+            emits_classical+=[np.random.binomial(1, pL2, Nev_classical)]
+            pass
+
+        counts_classical = {}
+        counts_classical['0 phi f1']=0
+        counts_classical['phi 0 f1']=0
+        counts_classical['phi phi f1']=0
+        counts_classical['0 0 f1']=0
+        for j in range(Nev_classical):
+            if emits_classical[0][j]==1 and emits_classical[1][j]==1:
+                counts_classical['phi phi f1']+=1
+            elif emits_classical[0][j]==0 and emits_classical[1][j]==1:
+                counts_classical['phi 0 f1']+=1
+            elif emits_classical[0][j]==1 and emits_classical[1][j]==0:
+                counts_classical['0 phi f1']+=1
+            else:
+                counts_classical['0 0 f1']+=1
+                pass
+            pass
+
+        print("Sanity check: g12 = 0, phi->ff = 0, classical")
+        for c in counts_classical:
+            print(c,counts_classical[c])
+        
+
+        #print("Sanity check: g12 = 0, phi->ff = 0, full quantum")
+        #for c in counts2b:
+        #    print(self.ptype(c.split()[10]), self.ptype(c.split()[11]), self.ptype(c.split()[12]), counts2b[c])
+
+        f = plt.figure(figsize=(7, 5))
+        ax = f.add_subplot(1, 1, 1)
+        plt.ylim((100*1e-4, 100*5.))
+        ax.set_yscale("log", nonposy='clip')
+        ax.set_ylabel('Probability [%]')
+        bar1 = plt.bar(firstisf1_x, firstisf1_y, color='#228b22', width=0.2, label=r"$f' = f_{1}$", hatch='\\') #,yerr=firstisf1_ey)
+        bar1b = plt.bar(firstisf2_x, firstisf2_y, color='#01B9FF', width=0.2, label=r"$f' = f_{2}$", hatch='//') #,yerr=firstisf2_ey)
+
+        ax.set_xticks([1,2,3,4,5,6])
+        ax.set_xticklabels( (r"$f_{1}\rightarrow f'$", r"$f_{1}\rightarrow f'\phi$", r"$f_{1}\rightarrow f'\phi\phi$",r"$f_{1}\rightarrow f' f_{1} \bar{f}_{1}$",r"$f_{1}\rightarrow f' f_{2} \bar{f}_{2}$",r"$f_{1}\rightarrow f' f_{1/2} \bar{f}_{2/1}$") )
+
+        plt.legend(loc='upper right',prop={'size': 9.5})
+
+        if counts2 != None:
+            bar2 = plt.bar(firstisf1b_x, firstisf1b_y, color='#FF4949', width=0.2, label=r"$f' = f_{1}$", alpha=1.0) #,hatch="//")
+            #plt.bar(firstisf2b_x,firstisf2b_y,color='blue',width=0.4,label=r"$f' = f_{2}$",yerr=firstisf2b_ey,alpha=0.5)
+            leg2 = ax.legend([bar1, bar1b, bar2],[r"$f' = f_{1}, g_{12} = 1$",r"$f' = f_{2}, g_{12} = 1$",r"$f' = f_{1}, g_{12} = 0$"], loc='upper right', prop={'size': 12.5}, frameon=False)
+        else:
+            leg2 = ax.legend([bar1,bar1b], [r'$g_{12} = 1$',r'$g_{12} = 0$'], loc='upper right',frameon=False,prop={'size': 12.5},bbox_to_anchor=(1.,0.8))
+
+        ax.add_artist(leg2);
+
+        plt.text(0.7, 55*3, r"2-step Full Quantum Simulation", fontsize=14)
+        plt.text(1.5, 30*2.8, r"$(g_{1},g_{2},\epsilon) = ("+str(g1)+","+str(g2)+",10^{-3})$", fontsize=10)
+
+        #f.savefig("fullsim2step_states.pdf")
+        plt.show()
+        #print(sum(firstisf1b_y))
+        print(sum(firstisf1_y))
+        #print(sum(firstisf2_y))
+
+        print(firstemission)
+        #print(firstemission2)
+
+
+
+
+
+
+    def bar_plot3(self, counts, events, eps, g1, g2, counts2= None):
+
+        mycounter = 0
+        mycounter2 = 0
+
+        y = []
+        ey = []
+        x = []
+        if counts2 != None:
+            y2 = []
+            ey2 = []
+            x2 = []
+
+        # Perhaps sort by uniqueness of number of where phis are
+        def mymap(pTup):
+            # pTup: sorted tuple/list of particles
+            #print(pTup)
+            if pTup[-1] == 'phi':
+                if pTup[-2] == 'phi':
+                    if pTup[-3] == 'phi':
+                        return 3
+                    return 2
+                return 1
+            return 0
+
+
+        for c in counts:
+            pList= list((self.ptype(c.split()[11]), self.ptype(c.split()[12]), self.ptype(c.split()[13]), self.ptype(c.split()[14])))
+            #print(mycounter, c, pList, counts[c])
+            mycounter+=1
+
+            y+=[100*counts[c]/events]
+            ey+=[100*counts[c]**0.5/events]
+            x+=[-0.1 + mymap(sorted(pList))]
+            pass            
+
+        if counts2 != 0:
+            for c in counts2:
+                pList= list((self.ptype(c.split()[11]), self.ptype(c.split()[12]), self.ptype(c.split()[13]), self.ptype(c.split()[14])))
+                #print(mycounter, c, pList, counts[c])
+                mycounter2+= 1
+
+                y2+=[100*counts2[c]/events]
+                ey2+=[100*counts2[c]**0.5/events]
+                x2+=[0.1 + mymap(sorted(pList))]
+                pass
+
+        f = plt.figure(figsize=(9, 6))
+        ax = f.add_subplot(1, 1, 1)
+        plt.ylim((100*1e-4, 100*5.))
+        ax.set_yscale("log", nonposy='clip')
+        ax.set_ylabel('Probability [%]', size= 20)
+        bar1 = plt.bar(x, y, color='#228b22', width=0.2, label=r"$g_{12}= 1$", hatch='\\') #,yerr=firstisf1_ey)
+        if counts2!= 0:
+            bar2 = plt.bar(x2, y2, color='#01B9FF', width=0.2, label=r"$g_{12}= 0$", hatch='\\') #,yerr=firstisf1_ey)
+            leg2 = ax.legend([bar1, bar2],[r'$g_{12} = 1$',r'$g_{12} = 0$'], loc='upper right', frameon=False, prop={'size': 12.5}, bbox_to_anchor=(1.,0.8))
+
+        ax.set_xticks([0, 1 , 2 , 3])
+        #ax.set_xticklabels( (r"$f_{1}\rightarrow f'$", r"$f_{1}\rightarrow f'\phi$", r"$f_{1}\rightarrow f'\phi\phi$",r"$f_{1}\rightarrow f' f_{1} \bar{f}_{1}$",r"$f_{1}\rightarrow f' f_{2} \bar{f}_{2}$",r"$f_{1}\rightarrow f' f_{1/2} \bar{f}_{2/1}$") )
+        plt.xlabel(r'Number of $\phi$', size=20)
+
+        plt.legend(loc='upper right',prop={'size': 14})
+
+
+
+        plt.text(-0.3, 55*4, r"3-step Full Quantum Simulation", fontsize=24)
+        #plt.title(r"3-step Full Quantum Simulation", fontsize=24)
+        plt.text(-0.3, 30*2.8, r"$(g_{1},g_{2},\epsilon) = ("+str(g1)+","+str(g2)+",10^{-3})$", fontsize=16)
+
+        f.savefig("fullsim3step_states.pdf")
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
