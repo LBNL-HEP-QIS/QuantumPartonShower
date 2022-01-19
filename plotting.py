@@ -435,7 +435,6 @@ def bar_plot_emissions(counts, events, eps, g1, g2, N, ni, counts2= None, save=T
             #print(c, ptype(c.split()[5]), ptype(c.split()[6]), ptype(c.split()[7]), counts[c])
 
             emit_N= int(mo.Nemissions(emit_list, n_I= ni))
-
             emissions_y[emit_N]+= 100*counts[c]/events
             emissions_ey[emit_N]+= 100*counts[c]**0.5/events
             #emissions_x+= [-offset + emit_N]

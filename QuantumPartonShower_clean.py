@@ -220,6 +220,27 @@ class QuantumPartonShower:
                 self._circuit.ccx(countReg[level], workReg[level - 1], ancilla)
 
 
+    def incrementer(self, l, b, a, control):
+        '''
+            b= countReg
+            a= workReg
+            len(workReg) = len(countReg) - 1 = l - 1
+        '''
+        self._circuit.ccx(control, b[0], a[0])
+        for j in range(1, l-1):
+            self._circuit.ccx(a[j-1], b[j], a[j])
+
+        for j in reversed(range(1, l)):
+            self._circuit.cx(a[j-1], b[j])
+            if j > 1:
+                self._circuit.ccx(a[j-2], b[j-1], a[j-1])
+            else:
+                self._circuit.ccx(control, b[j-1], a[j-1])
+
+        self._circuit.cx(control, b[0])
+
+
+
     def uCount(self, m, l):
         """
         Populate the count registers using current particle states.

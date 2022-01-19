@@ -247,16 +247,20 @@ class QuantumPartonShower:
 
             self._circuit.x(self.pReg[0])
             #########################################################################################################
-            #self._circuit.cu3(2*np.arccos(entry_h_a), 0, 0, self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 4)
-            self._circuit.cx(self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 4)
+            #v1:self._circuit.cu3(2*np.arccos(entry_h_a), 0, 0, self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 4)
+            #v2: self._circuit.cx(self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 4)
+            self._circuit.x(self.hReg[0]).c_if(self.hReg_cl[0], 4)
             #########################################################################################################
+            
             self._circuit.cu3(2*np.arccos(entry_h_aphi), 0, 0, self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 5)
             self._circuit.x(self.pReg[0])
             
             #########################################################################################################
-            #self._circuit.cu3(2*np.arccos(entry_h_b), 0, 0, self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 4)
-            self._circuit.cx(self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 4)
+            #v1: self._circuit.cu3(2*np.arccos(entry_h_b), 0, 0, self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 4)
+            #v2: self._circuit.cx(self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 4)
+            # current: combined with the cx a few lines up
             #########################################################################################################
+            
             self._circuit.cu3(2*np.arccos(entry_h_bphi), 0, 0, self.pReg[0], self.hReg[0]).c_if(self.hReg_cl[0], 5)
 
             self._circuit.measure(self.hReg[0], self.hReg_cl[1][0])
@@ -265,27 +269,32 @@ class QuantumPartonShower:
 
             # Now over p1
             entry_h_phi = 0
+
             #########################################################################################################
-            #self._circuit.cu3(2*np.arccos(entry_h_phi), 0, 0, self.pReg[3], self.hReg[1]).c_if(self.hReg_cl[1], 4)
-            self._circuit.cx(self.pReg[3], self.hReg[1]).c_if(self.hReg_cl[1], 4)
+            #v1: self._circuit.cu3(2*np.arccos(entry_h_phi), 0, 0, self.pReg[3], self.hReg[1]).c_if(self.hReg_cl[1], 4)
+            #v2: self._circuit.cx(self.pReg[3], self.hReg[1]).c_if(self.hReg_cl[1], 4)
+            self._circuit.x(self.hReg[1]).c_if(self.hReg_cl[1], 4)
             #########################################################################################################
-            self._circuit.measure(self.hReg[1], self.hReg_cl[1][1])
+            
+            # NOTE: WE DON'T NEED TO MEASURE hReg[1] TO GET WHAT WE WANT. IN FACT WE REALLY ONLY NEED 2 
+            #       CLASSICAL BITS TO CONDITION ON
+            #self._circuit.measure(self.hReg[1], self.hReg_cl[1][1])
 
 
             print('Apply U_p()...')
             self._circuit.x(self.pReg[6]).c_if(self.hReg_cl[1], 5)
-            self._circuit.x(self.pReg[8]).c_if(self.hReg_cl[1], 6)
-            self._circuit.x(self.pReg[5]).c_if(self.hReg_cl[1], 6)
+            self._circuit.x(self.pReg[8]).c_if(self.hReg_cl[1], 4)
+            self._circuit.x(self.pReg[5]).c_if(self.hReg_cl[1], 4)
 
-            self._circuit.h(self.pReg[7]).c_if(self.hReg_cl[1], 6)
+            self._circuit.h(self.pReg[7]).c_if(self.hReg_cl[1], 4)
             entry_r = g_a / (math.sqrt(g_a*g_a + g_b*g_b))
 
-            self._circuit.u3(2*np.arccos(entry_r), 0, 0, self.pReg[6]).c_if(self.hReg_cl[1], 6)
+            self._circuit.u3(2*np.arccos(entry_r), 0, 0, self.pReg[6]).c_if(self.hReg_cl[1], 4)
             self._circuit.x(self.pReg[7])
-            self._circuit.cx(self.pReg[7], self.pReg[4]).c_if(self.hReg_cl[1], 6)
+            self._circuit.cx(self.pReg[7], self.pReg[4]).c_if(self.hReg_cl[1], 4)
             self._circuit.x(self.pReg[7])
             self._circuit.x(self.pReg[6])
-            self._circuit.cx(self.pReg[6], self.pReg[3]).c_if(self.hReg_cl[1], 6)
+            self._circuit.cx(self.pReg[6], self.pReg[3]).c_if(self.hReg_cl[1], 4)
             self._circuit.x(self.pReg[6])
 
         # R^-(m) rotate every particle p_k from a,b to 1,2 basis (step 6)
