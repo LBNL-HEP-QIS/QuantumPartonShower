@@ -38,16 +38,20 @@ File Directory:
 
         Plots/*
         plotting.py
+        
+        classical.py                                     = MCMC for number of emissions, analytical θmax
+        QuantumPartonShower_clean.py                     = Final general N-step simulation
+        QuantumPartonShower_single_hRegcl_repackaged.py  = an intermediate version
+        QuantumPartonShower_ReM_2step_hardcode.py        = Final hardcoded 2-step simulation
+        QuantumPartonShower_ReM_2step_hardcode_old.py    = an intermediate version
 
-        QuantumPartonShower_single_hRegcl_repackaged.py                     = an intermediate version
-        QuantumPartonShower_ReM_hardcode_SIMPLIFIED_full_noNAreg.py         = Final hardcoded 2-step simulation
-	    QuantumPartonShower_clean.py                                        = Final general N-step simulation
-
-        counts_Nstep_.npy <-- gate_counting.ipynb
-        thetamax_analytical_N=*.npz <-- gate_counting.ipynb
-        mcmc_Nstep*.npy <-- gate_counting.ipynb
-        cx_hack.npy <-- gate_counting.ipynb
-        cx_naive.npy <-- gate_counting.ipynb
+        Data:
+            counts_Nstep_*.npy           <-- QPS_Paper_Plots.ipynb    =  QPS with mid-circuit meas. simulation counts
+            counts_OLD_Nstep_*.npy       <-- QPS_Paper_Plots.ipynb    =  original QPS simulation counts
+            thetamax_analytical_N=*.npz  <-- QPS_Paper_Plots.ipynb    =  analytic θmax curve
+            mcmc_Nstep*.npy              <-- QPS_Paper_Plots.ipynb    =  MCMC counts
+            cx_hack.npy                  <-- QPS_Paper_Plots.ipynb    =  CNOT counts for hacked QPS with mid-circuit meas.
+            cx_naive.npy                 <-- QPS_Paper_Plots.ipynb    =  CNOT counts for original QPS
 
         hold_*.txt <-- ????
         quantum_0*.npy <- ????
@@ -55,7 +59,10 @@ File Directory:
         quantum_counts_*.npy <- ????
         vals_classical.npy <- ????
         
-        Noteboooooooooook_manual.ipynb           = investigating strange qiskit simulator behaviors
-	    Notebooooooooooook.ipynb                 = old notebook, nothing much here
-        gate_counting.ipynb                      = Gate counting, plus generating plots using QuantumPartonShower_clean.py
-        hard_coded.ipynb                         = old notebook, used to test simplifications to QPS (more resets and fewer qubits)
+        Notebooks:
+            QPS_Paper_Plots.ipynb                    = Main notebook for generating the paper plots
+    
+            Noteboooooooooook_manual.ipynb           = investigating strange qiskit simulator behaviors
+	        Notebooooooooooook.ipynb                 = old notebook, nothing much here
+            gate_counting.ipynb                      = Messy workbook with just about everything in it
+            hard_coded.ipynb                         = old notebook, used to test simplifications to QPS (more resets and fewer qubits)

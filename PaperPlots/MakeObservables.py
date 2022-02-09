@@ -55,28 +55,28 @@ def hist_bins(ni, N, eps):
 
 
 
+if False:
+    #Let's run some tests
+    #myevent = ['f1', '0', 'phi']
+    myevent = ['phi', '0', 'f1']
+    n_I = 1
+    print("Number of emissions: ", Nemissions(myevent, n_I))
+    print("log(theta_max): ", LogThetaMax(myevent, n_I)) #<-- should be the bin center for the second bin in Fig. 1a
 
-#Let's run some tests
-#myevent = ['f1', '0', 'phi']
-myevent = ['phi', '0', 'f1']
-n_I = 1
-print("Number of emissions: ", Nemissions(myevent, n_I))
-print("log(theta_max): ", LogThetaMax(myevent, n_I)) #<-- should be the bin center for the second bin in Fig. 1a
+    #myevent = ['f1', 'phi', '0']
+    myevent = ['0', 'phi', 'f1']
+    n_I = 1
+    print("Number of emissions: ", Nemissions(myevent, n_I))
+    print("log(theta_max): ", LogThetaMax(myevent, n_I)) #<-- should be the bin center for the first bin in Fig. 1a
 
-#myevent = ['f1', 'phi', '0']
-myevent = ['0', 'phi', 'f1']
-n_I = 1
-print("Number of emissions: ", Nemissions(myevent, n_I))
-print("log(theta_max): ", LogThetaMax(myevent, n_I)) #<-- should be the bin center for the first bin in Fig. 1a
+    #myevent = ['f1', 'phi', 'phi']
+    myevent = ['phi', 'phi', 'f1']
+    n_I = 1
+    print("Number of emissions: ", Nemissions(myevent, n_I))
+    print("log(theta_max): ", LogThetaMax(myevent, n_I)) #<-- should be the bin center for the first bin in Fig. 1a
 
-#myevent = ['f1', 'phi', 'phi']
-myevent = ['phi', 'phi', 'f1']
-n_I = 1
-print("Number of emissions: ", Nemissions(myevent, n_I))
-print("log(theta_max): ", LogThetaMax(myevent, n_I)) #<-- should be the bin center for the first bin in Fig. 1a
-
-#myevent = ['f1', '0', 'phi', '0']
-myevent = ['0', 'phi', '0', 'f1']
-n_I = 1
-print("Number of emissions: ", Nemissions(myevent, n_I))
-print("log(theta_max): ", LogThetaMax(myevent, n_I))
+    #myevent = ['f1', '0', 'phi', '0']
+    myevent = ['0', 'phi', '0', 'f1']
+    n_I = 1
+    print("Number of emissions: ", Nemissions(myevent, n_I))
+    print("log(theta_max): ", LogThetaMax(myevent, n_I))

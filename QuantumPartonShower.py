@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from qiskit import QuantumCircuit, Aer, execute
 from qiskit import QuantumRegister, ClassicalRegister
+import qiskit.providers.aer as qpa
 
 class QuantumPartonShower:
     """
@@ -14,7 +15,8 @@ class QuantumPartonShower:
     def __init__(self, N, ni):
         self._N = N
         self._ni = ni
-        self._L = int(math.floor(math.log(N + ni, 2))+1)
+        #self._L = int(math.floor(math.log(N + ni, 2))+1)
+        self._L = int(math.ceil(math.log(N + ni, 2)))
 
         # Define these variables for indexing - to convert from cirq's grid qubits (see explaination in notebook)
         self._p_len = 3
@@ -120,8 +122,8 @@ class QuantumPartonShower:
 
     def allocateQubits(self, N, n_i, L):
         nqubits_p = 3 * (N + n_i)
-        #nqubits_h = N * math.ceil(math.log2((N + n_i)))
-        nqubits_h = N * int(math.floor(math.log2((N + n_i)) + 1))
+        nqubits_h = N * math.ceil(math.log2((N + n_i)))
+        #nqubits_h = N * int(math.floor(math.log2((N + n_i)) + 1))
         nqubits_e = 1
         nqubits_a_b_phi = L
 
@@ -314,7 +316,7 @@ class QuantumPartonShower:
            Delta_b):
         """Determine if emission occured in current step m"""
         countsList = self.generateParticleCounts(n_i, m, 0)
-
+        #print('\nm=%d, Length of countsList= ' %(m) + str(len(countsList)))
         for counts in countsList:
             n_phi, n_a, n_b = counts[0], counts[1], counts[2]
             Delta = Delta_phi ** n_phi * Delta_a ** n_a * Delta_b ** n_b
@@ -413,7 +415,7 @@ class QuantumPartonShower:
             P_phi,
             P_a, P_b):
         """Implement U_h from paper"""
-        print('\nm= ' + str(m))
+        #print('\nm= ' + str(m))
         #if m == 2:
             #print(hReg)
             #print('h_len= ' + str(self._h_len))
@@ -421,7 +423,7 @@ class QuantumPartonShower:
             #print(hReg[m*self._h_len : (m+1)*self._h_len])
         for k in range(n_i + m):
             # for k in range(1):
-            print("k: ", k)
+            #print("k: ", k)
             countsList = self.generateParticleCounts(n_i, m, k)  # reduce the available number of particles
 
             for counts in countsList:
@@ -559,7 +561,7 @@ class QuantumPartonShower:
             gp = -gp
         g_a, g_b = (g_1 + g_2 - gp) / 2, (g_1 + g_2 + gp) / 2
         u = math.sqrt(abs((gp + g_1 - g_2) / (2 * gp)))
-
+        #print('ga= %.4f, gb= %.4f, u= %.4f' %(g_a, g_b, u))
         # evaluate P(Theta) and Delta(Theta) at every time step
         timeStepList, P_aList, P_bList, P_phiList, Delta_aList, Delta_bList, Delta_phiList = [], [], [], [], [], [], []
         self.populateParameterLists(self._N, timeStepList, P_aList, P_bList, P_phiList, Delta_aList, Delta_bList, Delta_phiList,
@@ -609,7 +611,7 @@ class QuantumPartonShower:
                 self._circuit.cry((2 * math.asin(u)), self.pReg[index2 + 2], self.pReg[index2 + 0])
                 index2 += self._p_len
 
-        print('generated circuit on', len(self.flatten(list(qubits.values()))), 'qubits')
+        #print('generated circuit on', len(self.flatten(list(qubits.values()))), 'qubits')
 
         
         return self._circuit, qubits
@@ -617,8 +619,8 @@ class QuantumPartonShower:
 
     def allocateClbits(self, N, n_i, L):
         nbits_p = 3 * (N + n_i)
-        #nbits_h = N * math.ceil(math.log2((N + n_i)))
-        nbits_h = N * int(math.floor(math.log2(N + n_i)) + 1)
+        nbits_h = N * math.ceil(math.log2((N + n_i)))
+        #nbits_h = N * int(math.floor(math.log2(N + n_i)) + 1)
         nbits_e = 1
         nbits_a_b_phi = L
 
@@ -628,7 +630,8 @@ class QuantumPartonShower:
             pReg_cl.append(ClassicalRegister(3, 'p%d_cl' %(j)))
         hReg_cl = []
         for j in range(N):
-            hReg_cl.append(ClassicalRegister(int(math.floor(math.log2(N + n_i)) + 1), 'h%d_cl' %(j)))
+            #hReg_cl.append(ClassicalRegister(int(math.floor(math.log2(N + n_i)) + 1), 'h%d_cl' %(j)))
+            hReg_cl.append(ClassicalRegister(int(math.ceil(math.log2(N + n_i))), 'h%d_cl' %(j)))
         eReg_cl = ClassicalRegister(nbits_e, 'e_cl')
         n_phiReg_cl = ClassicalRegister(nbits_a_b_phi, 'nphi_cl')
         n_aReg_cl = ClassicalRegister(nbits_a_b_phi, 'na_cl')
@@ -652,9 +655,11 @@ class QuantumPartonShower:
         position of tbe non-zero elements
         :return: either counts (qasm) or the statevector
         """
-        if type == 'qasm':
-            #simulator = Aer.get_backend('qasm_simulator')
-            simulator = Aer.get_backend('aer_simulator_matrix_product_state')
+        if type == 'qasm' or type == 'mps':
+            if type == 'qasm':
+                simulator = Aer.get_backend('qasm_simulator')
+            else:
+                simulator = qpa.QasmSimulator(method= 'matrix_product_state')
 
             (wReg_cl, pReg_cl, hReg_cl, # Note: pReg_cl, hReg_cl aer lists of ClassicalRegisters
              eReg_cl, n_phiReg_cl, n_aReg_cl, 

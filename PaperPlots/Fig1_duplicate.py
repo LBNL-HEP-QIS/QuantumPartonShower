@@ -44,10 +44,6 @@ def Delta(lnt, g):
 def dsigma_d_t_max(lnt, lneps, g):
     return P(lnt, g) * Delta(lnt, g) / (1 - Delta(lneps, g))
 
-# The analytical distribution of the hardest emission
-def dsigma_d_t_max2(t, eps, g, N):
-    return (1 / math.log(eps**(1/N))) * (1 - eps**(g**2 / 4*N*math.pi)) * eps**(-g**2 / (8*N*math.pi)) * t**(g**2 / (4*N*math.pi))
-
 if (True):
     from qiskit import QuantumRegister, ClassicalRegister
     from qiskit import QuantumCircuit, execute
