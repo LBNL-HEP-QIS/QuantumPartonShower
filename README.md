@@ -29,19 +29,14 @@ File Directory:
 
         PaperPlots/
             Fig1_duplicate.py
-
-            hold_*.txt <-- two_stepSim.py
-            quantum_0*.npy <- Fig1.py
-            quantum_1*.npy <- Fig1.py
-            quantum_counts_*.npy <- Fig1.py
             vals_classical.npy <- Fig1.py
 
         Plots/*
         plotting.py
         
         classical.py                                     = MCMC for number of emissions, analytical θmax
-        QuantumPartonShower_clean.py                     = Final general N-step simulation
-        QuantumPartonShower_single_hRegcl_repackaged.py  = an intermediate version
+        QuantumPartonShower_ReM.py                       = Final general N-step simulation
+        QuantumPartonShower_ReM_forGateCounting.py       = an intermediate version
         QuantumPartonShower_ReM_2step_hardcode.py        = Final hardcoded 2-step simulation
         QuantumPartonShower_ReM_2step_hardcode_old.py    = an intermediate version
 
@@ -52,12 +47,6 @@ File Directory:
             mcmc_Nstep*.npy              <-- QPS_Paper_Plots.ipynb    =  MCMC counts
             cx_hack.npy                  <-- QPS_Paper_Plots.ipynb    =  CNOT counts for hacked QPS with mid-circuit meas.
             cx_naive.npy                 <-- QPS_Paper_Plots.ipynb    =  CNOT counts for original QPS
-
-        hold_*.txt <-- ????
-        quantum_0*.npy <- ????
-        quantum_1*.npy <- ????
-        quantum_counts_*.npy <- ????
-        vals_classical.npy <- ????
         
         Notebooks:
             QPS_Paper_Plots.ipynb                    = Main notebook for generating the paper plots
