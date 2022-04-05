@@ -196,8 +196,6 @@ def master_plot_phisplit_emissions(g1, g2, N, ni, events, counts, counts2, mcmc=
 
         max_diff= max(max(abs(diff_old1)), max(abs(diff_old2)))
         dy= math.ceil(1000 * max_diff) / 1000
-        #print(max_diff)
-        #print(dy)
 
         ytick_range= np.arange(-dy*(math.floor(num_yticks/2.)), dy*(math.floor(num_yticks/2.)+0.1), dy)
         #print(ytick_range)
@@ -224,9 +222,9 @@ def master_plot_phisplit_emissions(g1, g2, N, ni, events, counts, counts2, mcmc=
 
     if save == True:
         if old_alg != None:
-            plt.savefig('sim%dstep_emissions_shots=%s_paperStyle_NEW_withOld.pdf' %(N, '{:.0e}'.format(events)), bbox_inches='tight')
+            plt.savefig('./data/sim%dstep_emissions_shots=%s_paperStyle.pdf' %(N, '{:.0e}'.format(events)), bbox_inches='tight')
         else:
-            plt.savefig('sim%dstep_emissions_shots=%s_paperStyle_NEW.pdf' %(N, '{:.0e}'.format(events)), bbox_inches='tight')
+            plt.savefig('./data/sim%dstep_emissions_shots=%s_paperStyle_NEW.pdf' %(N, '{:.0e}'.format(events)), bbox_inches='tight')
     plt.show()
 
 
@@ -416,11 +414,14 @@ def master_plot_phisplit_thetamax(eps, g1, g2, N, ni, events, counts, counts2, a
         if normalized:
             ax2.step(np.arange(centers[0] - dx/2., centers[-1] + dx/2. + 1e-14, dx), np.concatenate((diff_g0_1[:1], diff_g0_1)), color='blue')
             ax2.errorbar(centers, np.zeros(N), yerr=tmOld2_ey/dx, ecolor='blue', elinewidth=3, capsize=6, capthick=2, ls='none')
+            #ax2.errorbar(centers-0.1, tmOld2_y/dx - mcmc, yerr=tmOld2_ey/dx, ecolor='blue', elinewidth=3, capsize=6, capthick=2, ls='none')
+            #ax2.errorbar(centers+0.1, tm2_y/dx - mcmc, yerr=tm2_ey/dx, ecolor='blue', elinewidth=3, capsize=6, capthick=2, ls='none')
         else:
             ax2.step(np.arange(centers[0] - dx/2., centers[-1] + dx/2. + 1e-14, dx), np.concatenate((diff_g0_1[:1], diff_g0_1))*dx, color='blue')
             ax2.errorbar(centers, np.zeros(N), yerr=tmOld2_ey, ecolor='blue', elinewidth=3, capsize=6, capthick=2, ls='none')
-            #print(mcmc)
-            #print(tm2_y)
+            #ax2.errorbar(centers-0.1, tmOld2_y - mcmc*dx, yerr=tmOld2_ey, ecolor='blue', elinewidth=3, capsize=6, capthick=2, ls='none')
+            #ax2.errorbar(centers+0.1, tm2_ey - mcmc*dx, yerr=tm2_ey, ecolor='blue', elinewidth=3, capsize=6, capthick=2, ls='none')
+
     else:
         diff_g0_1=np.zeros(N+1)
         if normalized:
@@ -506,7 +507,7 @@ def master_plot_phisplit_thetamax(eps, g1, g2, N, ni, events, counts, counts2, a
 
     if save == True:
         if old_alg != None:
-            plt.savefig('sim%dstep_thetamax_shots=%s_paperStyle_NEW_withOld.pdf' %(N, '{:.0e}'.format(events)), bbox_inches='tight')
+            plt.savefig('./data/sim%dstep_thetamax_shots=%s_paperStyle.pdf' %(N, '{:.0e}'.format(events)), bbox_inches='tight')
         else:
-            plt.savefig('sim%dstep_thetamax_shots=%s_paperStyle_NEW.pdf' %(N, '{:.0e}'.format(events)), bbox_inches='tight')
+            plt.savefig('./data/sim%dstep_thetamax_shots=%s_paperStyle_NEW.pdf' %(N, '{:.0e}'.format(events)), bbox_inches='tight')
     plt.show()

@@ -150,11 +150,12 @@ class QuantumPartonShower:
 
     def initializeParticles(self, circuit, pReg, initialParticles):
         """ Apply appropriate X gates to ensure that the p register contains all of the initial particles.
-            The p registers contains particles in the form of a list [LSB, middle bit, MSB]"""
+            The p registers contains particles in the form of a list [MSB, middle bit, LSB]"""
         for currentParticleIndex in range(len(initialParticles)):
             for particleBit in range(3):
+                pBit= 2 - particleBit # This makes the initial particle strings consistent with the paper convention (also ptype function)
                 if int(initialParticles[currentParticleIndex][particleBit]) == 1:
-                    circuit.x(pReg[currentParticleIndex * self._p_len + particleBit])
+                    circuit.x(pReg[currentParticleIndex * self._p_len + pBit])
 
     def flavorControl(self, circuit, flavor, control, target, ancilla, control_index, target_index, ancilla_index):
         """Controlled x onto targetQubit if "control" particle is of the correct flavor"""
@@ -552,7 +553,6 @@ class QuantumPartonShower:
         N: number of steps
         eps, g_1, g_2, g_12: pre-chosen qft parameters
         initialParticles: list of initial particles, each particle in a list of qubits [MSB, middle bit, LSB]
-        (opposite order of the paper pg 6 - e.g a f_a fermion is [0,0,1])
         in order [particle 1, particle 2, ..... particle n_i]
         """
         # calculate constants

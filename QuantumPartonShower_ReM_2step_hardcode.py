@@ -7,8 +7,6 @@ import qiskit.providers.aer as qpa
 
 from itertools import chain, combinations
 
-from PaperPlots import MakeObservables as mo
-
 
 class QuantumPartonShower:
     """
