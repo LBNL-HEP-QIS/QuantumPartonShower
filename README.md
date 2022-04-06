@@ -5,53 +5,67 @@ Particles produced in high energy collisions that are charged under one of the f
 Details can be found in [1904.03196 [quant-ph]](https://arxiv.org/abs/1904.03196).
 
 
-File Directory:
+# File Directory:
 
-    Old files:
+## Old files:
+* `PartonShower (1).ipynb`
+* `PartonShower_2.ipynb`
+* `SubcircuitTests.py`
+* `TestHelpers.py`
+* `circuit_drawing.py`
+* `create_circuit.py`
+* `qiskit_create_circ.py`
+* `testing_cirq_code.ipynb`
 
-        PartonShower (1).ipynb
-        PartonShower_2.ipynb
-        SubcircuitTests.py
-        TestHelpers.py
-        circuit_drawing.py
-        create_circuit.py
-        qiskit_create_circ.py
-        testing_cirq_code.ipynb
+## Updated files:
+* `PaperPlots/2stepSim.py` &rarr; `PaperPlots/two_stepSim.py`
+* `PaperPlots/MakeObservables.py`
+* `QuantumPartonShower.py`
+* `README.md`
 
-    Updated files:
+## New files:
 
-        PaperPlots/2stepSim.py --> PaperPlots/two_stepSim.py
-        PaperPlots/MakeObservables.py
-        QuantumPartonShower.py
-        README.md
+### Python:
+* `plotting.py`
+    * Code for generating plots of the remeasurement paper
+* `classical.py`
+    * classical MCMC simulations for computing number of emissions, and function for computing θmax analytically
+* `QuantumPartonShower_ReM.py`
+    * General N-step QPS circuit construction and simulation
+* `QuantumPartonShower_ReM_forGateCounting.py`
+    * Classically-controlled operations reduced to the actual number, as opposed to the hack used for Qiskit. This file should only be used to count gates.
+* `QuantumPartonShower_ReM_2step_hardcode.py`
+    * Hardcoded 2-step QPS circuit construction and simulation
 
-    New files:
+### Notebooks:
+* `QPS_Paper_Plots.ipynb`  
+    * Main notebook for generating the paper plots
+* `running_hard_coded.ipynb`
+    * How to run the hard-coded 2-step QPS simulation in `QuantumPartonShower_ReM_2step_hardcode.py`
 
-        PaperPlots/
-            Fig1_duplicate.py
-            vals_classical.npy <- Fig1.py
+### PaperPlots/
+* `Fig1_duplicate.py`
+* `vals_classical.npy` &larr; `Fig1.py`
 
-        Plots/*
-        plotting.py
-        
-        classical.py                                     = MCMC for number of emissions, analytical θmax
-        QuantumPartonShower_ReM.py                       = Final general N-step simulation
-        QuantumPartonShower_ReM_forGateCounting.py       = an intermediate version
-        QuantumPartonShower_ReM_2step_hardcode.py        = Final hardcoded 2-step simulation
-        QuantumPartonShower_ReM_2step_hardcode_old.py    = an intermediate version
+### plots/
+* `fig4_qubit_count.pdf`
+* `fig5_gate_count.pdf`
+* `simNstep_emissions_shots=1e+05_paperStyle.pdf`
+    * Probability distribution (with errors) of number of emissions for an N-step QPS simulation
+* `simNstep_thetamax_shots=1e+05_paperStyle.pdf`
+    * Probability distribution (with errors) of θmax for an N-step QPS simulation
 
-        Data:
-            counts_Nstep_*.npy           <-- QPS_Paper_Plots.ipynb    =  QPS with mid-circuit meas. simulation counts
-            counts_OLD_Nstep_*.npy       <-- QPS_Paper_Plots.ipynb    =  original QPS simulation counts
-            thetamax_analytical_N=*.npz  <-- QPS_Paper_Plots.ipynb    =  analytic θmax curve
-            mcmc_Nstep*.npy              <-- QPS_Paper_Plots.ipynb    =  MCMC counts
-            cx_hack.npy                  <-- QPS_Paper_Plots.ipynb    =  CNOT counts for hacked QPS with mid-circuit meas.
-            cx_naive.npy                 <-- QPS_Paper_Plots.ipynb    =  CNOT counts for original QPS
-        
-        Notebooks:
-            QPS_Paper_Plots.ipynb                    = Main notebook for generating the paper plots
-    
-            Noteboooooooooook_manual.ipynb           = investigating strange qiskit simulator behaviors
-	        Notebooooooooooook.ipynb                 = old notebook, nothing much here
-            gate_counting.ipynb                      = Messy workbook with just about everything in it
-            hard_coded.ipynb                         = old notebook, used to test simplifications to QPS (more resets and fewer qubits)
+### data/
+* `counts_Nstep_*.npy`           &larr;  QPS_Paper_Plots.ipynb
+    * QPS with mid-circuit meas. simulation counts
+* `counts_OLD_Nstep_*.npy`       &larr;  QPS_Paper_Plots.ipynb
+    * original QPS simulation counts
+* `thetamax_analytical_N=*.npz`  &larr;  QPS_Paper_Plots.ipynb
+    * analytic θmax curve                               
+    * arr0 is the θmax array, arr1 is the solid angle dσ / dθmax (proportional to probability)
+* `mcmc_Nstep*.npy`              &larr;  QPS_Paper_Plots.ipynb           
+    * MCMC counts
+* `cx_hack.npy`                  &larr;  QPS_Paper_Plots.ipynb
+    * CNOT counts for hacked QPS with mid-circuit meas.
+* `cx_naive.npy`                 &larr;  QPS_Paper_Plots.ipynb
+    * CNOT counts for original QPS
