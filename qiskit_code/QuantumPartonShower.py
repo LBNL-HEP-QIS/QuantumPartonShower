@@ -35,10 +35,6 @@ class QuantumPartonShower:
         self.pReg, self.hReg, self.w_hReg, self.eReg, self.wReg, self.n_aReg, self.w_aReg,self.n_bReg, self.w_bReg, \
         self.n_phiReg, self.w_phiReg = self.allocateQubits(N, ni, self._L)
 
-        #print(self.pReg, self.hReg, self.w_hReg, self.eReg, self.wReg, self.n_aReg,
-        #                               self.w_aReg, self.n_bReg, self.w_bReg, self.n_phiReg, self.w_phiReg)
-        #self._circuit = QuantumCircuit(self.pReg, self.hReg, self.w_hReg, self.eReg, self.wReg, self.n_aReg,
-        #                               self.w_aReg, self.n_bReg, self.w_bReg, self.n_phiReg, self.w_phiReg)
         self._circuit = QuantumCircuit(self.wReg, self.pReg, self.hReg, self.eReg, self.n_phiReg, self.n_aReg,
                                        self.n_bReg, self.w_hReg, self.w_phiReg, self.w_aReg, self.w_bReg)
 
@@ -131,7 +127,6 @@ class QuantumPartonShower:
         # pReg = QuantumRegister(6)
 
         hReg = QuantumRegister(nqubits_h, 'h')
-        #w_hReg = QuantumRegister(nqubits_h, 'w_h')
         w_hReg = QuantumRegister(L, 'w_h')
 
         eReg = QuantumRegister(nqubits_e, 'e')
@@ -145,7 +140,7 @@ class QuantumPartonShower:
 
         n_phiReg = QuantumRegister(nqubits_a_b_phi, 'n_phi')
         w_phiReg = QuantumRegister(nqubits_a_b_phi, 'w_phi')
-        #print(pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg)
+
         return (pReg, hReg, w_hReg, eReg, wReg, n_aReg, w_aReg, n_bReg, w_bReg, n_phiReg, w_phiReg)
 
     def initializeParticles(self, circuit, pReg, initialParticles):
@@ -166,16 +161,12 @@ class QuantumPartonShower:
             circuit.ccx(control[control_index + 2], ancilla[ancilla_index], target[target_index + 0])
             # undo work
             circuit.ccx(control[control_index + 0], control[control_index + 1], ancilla[ancilla_index])
-            #circuit.x(1)
-            #circuit.x(2)
             circuit.x(control[control_index + 1])
             circuit.x(control[control_index + 2])
         if flavor == "a":
-            #circuit.x(0)
             circuit.x(control[control_index + 0])
             circuit.ccx(control[control_index + 0], control[control_index + 2], target[target_index + 0])
             # undo work
-            #circuit.x(0)
             circuit.x(control[control_index + 0])
         if flavor == "b":
             circuit.ccx(control[control_index + 0], control[control_index + 2], target[target_index + 0])
@@ -268,8 +259,7 @@ class QuantumPartonShower:
             numberBinary = self.intToBinary(l, number)
         else:
             numberBinary = number
-        #print('length of numberBinary: ' + str(len(numberBinary)))
-        #print('length of countReg: ' + str(len(countReg)))
+
         [circuit.x(countReg[i]) for i in range(len(numberBinary)) if numberBinary[i] == 0]
 
         # first level does not use work qubits as control
@@ -317,7 +307,7 @@ class QuantumPartonShower:
            Delta_b):
         """Determine if emission occured in current step m"""
         countsList = self.generateParticleCounts(n_i, m, 0)
-        #print('\nm=%d, Length of countsList= ' %(m) + str(len(countsList)))
+
         for counts in countsList:
             n_phi, n_a, n_b = counts[0], counts[1], counts[2]
             Delta = Delta_phi ** n_phi * Delta_a ** n_a * Delta_b ** n_b
@@ -353,10 +343,9 @@ class QuantumPartonShower:
         Implements two level Ry rotation from state |0> to |k>, if externalControl qubit is on
         for reference: http://www.physics.udel.edu/~msafrono/650/Lecture%206.pdf
         """
-        #print("Generating gray list with     l= %d, k= %d" %(l, k))
+        # print("l: ", l, "\nk: ", k)
         grayList = self.generateGrayList(l, k)
-        #print('Graylist: ' + str(grayList))
-        #print('reg: ' + str(reg))
+
         # handle the case where l=0 or 1
         if k == 0:
             return
@@ -416,26 +405,13 @@ class QuantumPartonShower:
             P_phi,
             P_a, P_b):
         """Implement U_h from paper"""
-        #print('\nm= ' + str(m))
-        #if m == 2:
-            #print(hReg)
-            #print('h_len= ' + str(self._h_len))
-            #print(hReg[4:6])
-            #print(hReg[m*self._h_len : (m+1)*self._h_len])
         for k in range(n_i + m):
-            # for k in range(1):
-            #print("k: ", k)
             countsList = self.generateParticleCounts(n_i, m, k)  # reduce the available number of particles
 
             for counts in countsList:
-                #print('counts: ' + str(counts))
                 n_phi, n_a, n_b = counts[0], counts[1], counts[2]
-                # controlled R-y from |0> to |k> on all qubits with all possible angles depending on n_phi, n_a, n_b, and flavor
-                # for flavor in ['phi']:
-                # if n_phi == 3 and n_a == 0 and n_b ==0:
-                # print("counts: ", counts)
-                # print("after if : ", n_phi, n_a, n_b)
 
+                # controlled R-y from |0> to |k> on all qubits with all possible angles depending on n_phi, n_a, n_b, and flavor
                 for flavor in ['phi', 'a', 'b']:
                     angle = self.U_hAngle(flavor, n_phi, n_a, n_b, P_phi, P_a, P_b)
 
@@ -451,19 +427,15 @@ class QuantumPartonShower:
                     circuit.ccx(phiControl, aControl, wReg[0])
                     circuit.ccx(bControl, wReg[0], wReg[1])
 
-                    self.flavorControl(circuit, flavor, pReg, wReg, wReg, (k * self._p_len), 2,
-                                  4)  # wReg[4] is work qubit but is reset to 0
+                    self.flavorControl(circuit, flavor, pReg, wReg, wReg, (k * self._p_len), 2, 4)  # wReg[4] is work qubit but is reset to 0
                     circuit.ccx(wReg[1], wReg[2], wReg[3])
                     circuit.ccx(eReg[0], wReg[3], wReg[4])
 
-                    #print('flavor: ' + flavor)
-                    #self.twoLevelControlledRy(circuit, l, angle, k + 1, wReg[4], hReg, w_hReg)
                     self.twoLevelControlledRy(circuit, l, angle, k + 1, wReg[4], hReg[m*self._h_len : (m+1)*self._h_len], w_hReg)
 
                     circuit.ccx(eReg[0], wReg[3], wReg[4])  # next steps undo work qubits
                     circuit.ccx(wReg[1], wReg[2], wReg[3])
-                    self.flavorControl(circuit, flavor, pReg, wReg, wReg, (k * self._p_len), 2,
-                                  4)  # wReg[4] is work qubit but is reset to 0
+                    self.flavorControl(circuit, flavor, pReg, wReg, wReg, (k * self._p_len), 2, 4)  # wReg[4] is work qubit but is reset to 0
                     circuit.ccx(bControl, wReg[0], wReg[1])
                     circuit.ccx(phiControl, aControl, wReg[0])
                     self.numberControlT(circuit, l, n_b, n_bReg, w_bReg)
@@ -473,11 +445,9 @@ class QuantumPartonShower:
             # subtract from the counts register depending on which flavor particle emitted
             for flavor, countReg, workReg in zip(['phi', 'a', 'b'], [n_phiReg, n_aReg, n_bReg],
                                                  [w_phiReg, w_aReg, w_bReg]):
-                self.flavorControl(circuit, flavor, pReg, wReg, wReg, (k * self._p_len), 0,
-                              1)  # wReg[4] is work qubit but is reset to 0
+                self.flavorControl(circuit, flavor, pReg, wReg, wReg, (k * self._p_len), 0, 1)  # wReg[4] is work qubit but is reset to 0
                 self.minus1(circuit, l, countReg, workReg, wReg[0], wReg[1], 0)
-                self.flavorControl(circuit, flavor, pReg, wReg, wReg, (k * self._p_len), 0,
-                              1)  # wReg[4] is work qubit but is reset to 0
+                self.flavorControl(circuit, flavor, pReg, wReg, wReg, (k * self._p_len), 0, 1)  # wReg[4] is work qubit but is reset to 0
 
         # apply x on eReg if hReg[m] = 0, apply another x so we essentially control on not 0 instead of 0
         isZeroControl = self.numberControl(circuit, l, 0, hReg[m*self._L : (m+1)*self._L], w_hReg)
@@ -494,16 +464,8 @@ class QuantumPartonShower:
         oldParticleReg = pReg
         newParticleReg = pReg
         # first gate in paper U_p
-        # print("k: ", k)
-        # print("m: ", m)
-        # print("ni: ", n_i)
-        # print("pReg: ", pReg)
-        # print(oldParticleReg)
-        # print("new particle register: ", newParticleReg)
-        #
-        # print(" oldParticleReg[k*self._p_len + 2]: ", oldParticleReg[k * self._p_len + 2])
-        # print("newParticleReg[(n_i+m)*self._p_len+0]: ", newParticleReg[(n_i + m) * self._p_len + 0])
         circuit.ccx(controlQub, oldParticleReg[k * self._p_len + 2], newParticleReg[(n_i + m) * self._p_len + 0])
+
         # second gate in paper (undoes work register immediately)
         circuit.x(oldParticleReg[k * self._p_len + 1])
         circuit.x(oldParticleReg[k * self._p_len + 2])
@@ -514,15 +476,19 @@ class QuantumPartonShower:
         circuit.ccx(controlQub, oldParticleReg[k * self._p_len + 2], wReg[0])
         circuit.x(oldParticleReg[k * self._p_len + 1])
         circuit.x(oldParticleReg[k * self._p_len + 2])
+
         # third gate in paper
-        circuit.ccx(controlQub, newParticleReg[(n_i + m) * self._p_len + 2], oldParticleReg[k * self._p_len + 2]) ############################
+        circuit.ccx(controlQub, newParticleReg[(n_i + m) * self._p_len + 2], oldParticleReg[k * self._p_len + 2])
+
         # fourth and fifth gate in paper (then undoes work register)
         circuit.ccx(controlQub, newParticleReg[(n_i + m) * self._p_len + 2], wReg[0])
+
         # check the format for the control state here
         circuit.ch(wReg[0], newParticleReg[(n_i + m) * self._p_len + 1])
         angle = (2 * np.arccos(g_a / np.sqrt(g_a ** 2 + g_b ** 2)))
         circuit.cry(angle, wReg[0], newParticleReg[(n_i + m) * self._p_len + 0])
         circuit.ccx(controlQub, newParticleReg[(n_i + m) * self._p_len + 2], wReg[0])
+
         # sixth and seventh gate in paper (then undoes work register)
         circuit.x(newParticleReg[(n_i + m) * self._p_len + 0])
         circuit.x(newParticleReg[(n_i + m) * self._p_len + 1])
@@ -538,11 +504,8 @@ class QuantumPartonShower:
     def U_p(self, circuit, l, n_i, m, pReg, hReg, w_hReg, wReg, g_a, g_b):
         """Applies U_p from paper"""
         for k in range(0, n_i + m):
-            #controlQub = self.numberControl(circuit, l, k + 1, hReg, w_hReg)
             controlQub = self.numberControl(circuit, l, k + 1, hReg[m*self._h_len : (m+1)*self._h_len], w_hReg)
             self.updateParticles(circuit, l, n_i, m, k, pReg, wReg, controlQub, g_a, g_b)
-            #self.numberControlT(circuit, l, k + 1, hReg, w_hReg)
-            #self.numberControlT(circuit, l, k + 1, hReg[m:(m + self._h_len)], w_hReg)
             self.numberControlT(circuit, l, k + 1, hReg[m*self._h_len : (m+1)*self._h_len], w_hReg)
 
     def createCircuit(self, eps, g_1, g_2, g_12, initialParticles):
@@ -561,7 +524,7 @@ class QuantumPartonShower:
             gp = -gp
         g_a, g_b = (g_1 + g_2 - gp) / 2, (g_1 + g_2 + gp) / 2
         u = math.sqrt(abs((gp + g_1 - g_2) / (2 * gp)))
-        #print('ga= %.4f, gb= %.4f, u= %.4f' %(g_a, g_b, u))
+
         # evaluate P(Theta) and Delta(Theta) at every time step
         timeStepList, P_aList, P_bList, P_phiList, Delta_aList, Delta_bList, Delta_phiList = [], [], [], [], [], [], []
         self.populateParameterLists(self._N, timeStepList, P_aList, P_bList, P_phiList, Delta_aList, Delta_bList, Delta_phiList,
@@ -594,9 +557,6 @@ class QuantumPartonShower:
                Delta_phiList[m], Delta_aList[m], Delta_bList[m])
 
             # choose a particle to split (step 4)
-            #if m == 2:
-                #print('l, ni, m, pReg, hReg, P_phiList[m], P_aList[m], P_bList[m] ...')
-                #print(l, self._ni, m, self.pReg, self.hReg, P_phiList[2], P_aList[2], P_bList[2])
             self.U_h(self._circuit, l, self._ni, m, self.n_phiReg, self.w_phiReg, self.n_aReg, self.w_aReg, self.n_bReg,
                      self.w_bReg, self.wReg, self.eReg, self.pReg, self.hReg, self.w_hReg,
                 P_phiList[m], P_aList[m], P_bList[m])
@@ -611,7 +571,7 @@ class QuantumPartonShower:
                 self._circuit.cry((2 * math.asin(u)), self.pReg[index2 + 2], self.pReg[index2 + 0])
                 index2 += self._p_len
 
-        #print('generated circuit on', len(self.flatten(list(qubits.values()))), 'qubits')
+        print('generated circuit on', len(self.flatten(list(qubits.values()))), 'qubits')
 
         
         return self._circuit, qubits
@@ -624,20 +584,18 @@ class QuantumPartonShower:
         nbits_e = 1
         nbits_a_b_phi = L
 
-        wReg_cl = ClassicalRegister(5, 'w_cl')  # we use all 5 of these work register qubits, but not sure why it is 5
+        wReg_cl = ClassicalRegister(5, 'w_cl')
         pReg_cl = []
         for j in range(N + n_i):
             pReg_cl.append(ClassicalRegister(3, 'p%d_cl' %(j)))
         hReg_cl = []
         for j in range(N):
-            #hReg_cl.append(ClassicalRegister(int(math.floor(math.log2(N + n_i)) + 1), 'h%d_cl' %(j)))
             hReg_cl.append(ClassicalRegister(int(math.ceil(math.log2(N + n_i))), 'h%d_cl' %(j)))
         eReg_cl = ClassicalRegister(nbits_e, 'e_cl')
         n_phiReg_cl = ClassicalRegister(nbits_a_b_phi, 'nphi_cl')
         n_aReg_cl = ClassicalRegister(nbits_a_b_phi, 'na_cl')
         n_bReg_cl = ClassicalRegister(nbits_a_b_phi, 'nb_cl')
 
-        #w_hReg_cl = ClassicalRegister(nbits_h, 'wh_cl')
         w_hReg_cl = ClassicalRegister(L, 'wh_cl')
         w_phiReg_cl = ClassicalRegister(nbits_a_b_phi, 'wphi_cl')
         w_aReg_cl = ClassicalRegister(nbits_a_b_phi, 'wa_cl')

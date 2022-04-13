@@ -341,31 +341,6 @@ def runQuantum(gLR,dophisplit):
     ca = ClassicalRegister(Na, 'ca')
     cb = ClassicalRegister(Nb, 'cb')
 
-
-############################################################################################################
-    #meas = QuantumCircuit(w,p0,p1,p2,h1,h2,e,phi,a,b,cw,cp0,cp1,cp2,ch1,ch2,ce,cphi,ca,cb)
-    #meas.barrier(w,p0,p1,p2,h1,h2,e,phi,a,b)
-    #meas.measure(w,cw)
-    #meas.measure(p0,cp0)
-    #meas.measure(p1,cp1)
-    #meas.measure(p2,cp2)
-    #meas.measure(h1,ch1)
-    #meas.measure(h2,ch2)
-    #meas.measure(e,ce)
-    #meas.measure(phi,cphi)
-    #meas.measure(a,ca)
-    #meas.measure(b,cb)
-    #circ = qc2+meas
-
-    #print("Running quantum simulation with g12 =",gLR,"and phi->ff is (1 = on, 0 = off)",dophisplit)
-    #print('Number of qubits: %d' %(circ.num_qubits))
-    #print(circ.draw())
-    #job = execute(circ, backend_sim, shots=events)
-    #result = job.result()
-    #counts = result.get_counts(circ)
-    #return counts
-############################################################################################################
-
     qc2.add_register(cw)
     qc2.add_register(cp0)
     qc2.add_register(cp1)
@@ -387,16 +362,15 @@ def runQuantum(gLR,dophisplit):
     qc2.measure(phi, cphi)
     qc2.measure(a, ca)
     qc2.measure(b, cb)
-
+    
     print("Running quantum simulation with g12 =",gLR,"and phi->ff is (1 = on, 0 = off)",dophisplit)
     print('Number of qubits: %d' %(qc2.num_qubits))
-    #print(qc2.draw())
     job = execute(qc2, backend_sim, shots=events)
     result = job.result()
     counts = result.get_counts(qc2)
-    print(qc.count_ops())
     return counts
-############################################################################################################
+
+
 def bar_plot(counts, events, eps, g1, g2, counts2= None):
     mycounter = 0
 
@@ -748,7 +722,7 @@ if __name__ == "__main__":
     plt.text(0.7,55*3,r"2-step Full Quantum Simulation", fontsize=14)
     plt.text(1.5,30*2.8,r"$(g_{1},g_{2},\epsilon) = ("+str(gL)+","+str(gR)+",10^{-3})$", fontsize=10)
 
-    #f.savefig("fullsim2step_states_True.pdf")
+    f.savefig("fullsim2step_states.pdf")
 
     print(sum(firstisf1b_y))
     print(sum(firstisf2b_y))

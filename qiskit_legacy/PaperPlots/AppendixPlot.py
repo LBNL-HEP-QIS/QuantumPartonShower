@@ -98,4 +98,3 @@ plt.subplots_adjust(left=0.15,right=0.9,top=0.95,bottom=0.15)
 plt.plot(x_forfit, func(x_forfit, *popt), color='black',label=r"fit to $N^{5}\log(N)$",linestyle='--') #, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
 plt.legend(loc='lower right',prop={'size': 9.5},frameon=False)
 f.savefig("appendixplot.pdf")
-

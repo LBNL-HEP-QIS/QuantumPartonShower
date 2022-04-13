@@ -44,7 +44,7 @@ def Delta(lnt, g):
 def dsigma_d_t_max(lnt, lneps, g):
     return P(lnt, g) * Delta(lnt, g) / (1 - Delta(lneps, g))
 
-if (False):
+if (True):
     from qiskit import QuantumRegister, ClassicalRegister
     from qiskit import QuantumCircuit, execute
     from qiskit.tools.visualization import circuit_drawer
