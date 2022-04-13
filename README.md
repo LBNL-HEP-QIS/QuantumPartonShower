@@ -16,9 +16,9 @@ Details can be found in [1904.03196 [quant-ph]](https://arxiv.org/abs/1904.03196
 * `create_circuit.py`
 * `qiskit_create_circ.py`
 * `testing_cirq_code.ipynb`
+* `PaperPlots/2stepSim.py`
 
 ## Updated files:
-* `PaperPlots/2stepSim.py` &rarr; `PaperPlots/two_stepSim.py`
 * `PaperPlots/MakeObservables.py`
 * `QuantumPartonShower.py`
 * `README.md`
@@ -44,8 +44,12 @@ Details can be found in [1904.03196 [quant-ph]](https://arxiv.org/abs/1904.03196
     * How to run the hard-coded 2-step QPS simulation in `QuantumPartonShower_ReM_2step_hardcode.py`
 
 ### PaperPlots/
-* `Fig1_duplicate.py`
 * `vals_classical.npy` &larr; `Fig1.py`
+* `hold_*.txt` &larr; `2stepSim.py`
+* `fullsim2step_states.pdf` &larr; `Fig1.py`
+* `quantum_0_*.npy` &larr; `Fig1.py`
+* `quantum_100_*.npy` &larr; `Fig1.py`
+* `test_alpha*.pdf` &larr; `Fig1.py`
 
 ### plots/
 * `fig4_qubit_count.pdf`

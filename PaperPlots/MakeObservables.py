@@ -1,7 +1,7 @@
 # One "event" is represented as a list of N+n_I particles corresponding to the N steps.  
-# The possible symbols for the particles are f1, af1, f2, af2, phi, and 0 (none).
+# The possible symbols for the particles are f1, af1, f2, af2, phi, and 0 -- represented as strings.
 # For example, an event might look like [f1, none, none, none] if there is a fermion that does not radiate at all.  
-# Another example is [f1, none, phi, none] in which a fermion radiates a phi in the second step.
+# Another example is [f1, 0, phi, 0] in which a fermion radiates a phi in the second step.
 
 import math
 import numpy as np
@@ -10,7 +10,6 @@ def Nemissions(myevent, n_I= 1):
 	#This function returns the observable shown in Fig. 1b.
 	mycount = 0
 	for i in range(0, len(myevent) - n_I):
-		#if myevent[i]!= 'none':
 		if myevent[i]!= '0':
 			mycount+= 1
 			pass
@@ -23,23 +22,16 @@ def LogThetaMax(myevent, n_I= 1, eps= 0.001):
     # Outputs -1 if there is no emission.
 
     N = len(myevent) - n_I
-    #print('N: ' + str(N))
     firstemmit = -1
-    #for i in range(n_I, len(myevent)):
     for i in reversed(range(0, len(myevent) - n_I)):
-        #if myevent[i]!= 'none':
-        #print(i, len(myevent) - n_I - i - 1, myevent[i])
         if myevent[i]!= '0':
-            #firstemmit= i-n_I
             firstemmit= len(myevent) - n_I - i - 1
             break
 
-    #print(firstemmit)
     hist_bins = [math.log(eps**(j / N)) for j in range(N, -1, -1)]
     hist_bins = np.array(hist_bins)
-    #print('hist_bins: ' + str(hist_bins))
     centers = (hist_bins[:-1] + hist_bins[1:]) / 2.
-    #print('centers: ' + str(centers))
+
     if firstemmit != -1:
         return centers[::-1][firstemmit], centers, hist_bins
     else:
@@ -52,8 +44,6 @@ def hist_bins(ni, N, eps):
 	centers = (hb[:-1] + hb[1:]) / 2.
 
 	return hb, centers
-
-
 
 if False:
     #Let's run some tests
