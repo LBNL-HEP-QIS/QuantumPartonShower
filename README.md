@@ -5,51 +5,73 @@ Particles produced in high energy collisions that are charged under one of the f
 Details can be found in [1904.03196 [quant-ph]](https://arxiv.org/abs/1904.03196).
 
 
-# File Directory:
+# File Directories:
+The files are organized into several different directories:
+* cirq_code
+    * contains all files that import `cirq`
+* qiskit_code
+    * contains all files that import `qiskit` and not `cirq`
+* plots
+    * contains all plots used in `arxiv:2203.10018`
+* data
+    * contains qiskit simulation and classical MCMC data
+* qiskit_legacy
+    * contains QuantumPartonShower.py, before Plato made some adjustments
+* qiskit_legacy/PaperPlots
+    * contains Ben's original code used for `arxiv:1904.03196`
 
-## Old files:
-* `PartonShower (1).ipynb`
-* `PartonShower_2.ipynb`
-* `SubcircuitTests.py`
-* `TestHelpers.py`
-* `circuit_drawing.py`
-* `create_circuit.py`
-* `qiskit_create_circ.py`
-* `testing_cirq_code.ipynb`
-* `PaperPlots/2stepSim.py`
 
-## Updated files:
-* `PaperPlots/MakeObservables.py`
-* `QuantumPartonShower.py`
-* `README.md`
-
-## New files:
-
-### Python:
+## Table of Contents:
 * `plotting.py`
     * Code for generating plots of the remeasurement paper
 * `classical.py`
     * classical MCMC simulations for computing number of emissions, and function for computing θmax analytically
-* `QuantumPartonShower_ReM.py`
-    * General N-step QPS circuit construction and simulation
-* `QuantumPartonShower_ReM_forGateCounting.py`
-    * Classically-controlled operations reduced to the actual number, as opposed to the hack used for Qiskit. This file should only be used to count gates.
-* `QuantumPartonShower_ReM_2step_hardcode.py`
-    * Hardcoded 2-step QPS circuit construction and simulation
 
-### Notebooks:
-* `QPS_Paper_Plots.ipynb`  
-    * Main notebook for generating the paper plots
-* `running_hard_coded.ipynb`
-    * How to run the hard-coded 2-step QPS simulation in `QuantumPartonShower_ReM_2step_hardcode.py`
+### cirq_code/
+* `TestHelpers.py`
+    * helper functions for testing cirq circuits
+* `SubcircuitTests.py`
+    * unittest file for testing cirq circuit elements (Ucount, Ue, Uh, Up, etc.)
+* `circuit_drawing.py`
+* `create_circuit.py`
+    * cirq QPS circuits
+* `testing_cirq_code.ipynb`
+* `PartonShower_1.ipynb`
+* `PartonShower_2.ipynb`
 
-### PaperPlots/
+### qiskit_legacy/
+* `QuantumPartonShower_legacy.py`
+    * the version of `QuantumPartonShower.py` before Plato made adjustments
+* `qiskit_create_circ.py`
+    * contains the contents of `QuantumPartonShower_legacy.py`, but not wrapped nicely in a class
+
+### qiskit_legacy/PaperPlots/
+Contains Ben's original code used for `arxiv:1904.03196`.
+* `MakeObservables.py`
+* `Fig1.py`
+* `2stepSim.py`
+* `AppendixPlot.py`
+
+Data files that can be generated from `Fig1.py`:
 * `vals_classical.npy` &larr; `Fig1.py`
 * `hold_*.txt` &larr; `2stepSim.py`
 * `fullsim2step_states.pdf` &larr; `Fig1.py`
 * `quantum_0_*.npy` &larr; `Fig1.py`
 * `quantum_100_*.npy` &larr; `Fig1.py`
 * `test_alpha*.pdf` &larr; `Fig1.py`
+
+###  qiskit_code/
+* `QuantumPartonShower_ReM.py`
+    * General N-step QPS circuit construction and simulation
+* `QuantumPartonShower_ReM_2step_hardcode.py`
+    * Hardcoded 2-step QPS circuit construction and simulation
+* `QuantumPartonShower_ReM_forGateCounting.py`
+    * Classically-controlled operations reduced to once per true operation, as opposed to the hack used for Qiskit. This file should only be used to count gates.
+
+* `QPS_Paper_Plots.ipynb`  
+    * Main notebook for generating the paper plots
+* `running_hard_coded.ipynb`
+    * How to run the hard-coded 2-step QPS simulation in `QuantumPartonShower_ReM_2step_hardcode.py`
 
 ### plots/
 * `fig4_qubit_count.pdf`
