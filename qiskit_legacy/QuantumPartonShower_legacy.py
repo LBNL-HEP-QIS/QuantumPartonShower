@@ -591,4 +591,3 @@ class QuantumPartonShower:
             return statevector
         else:
             print("choose 'qasm' or 'statevector'")
-
