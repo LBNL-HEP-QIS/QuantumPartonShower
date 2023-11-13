@@ -1,0 +1,353 @@
+OPENQASM 2.0;
+include "qelib1.inc";
+gate cx_to_x q0,q1 { id q1; ry(0) q0; }
+gate ccx_to_removed q0,q1,q2 { id q0; id q1; id q1; }
+gate ccx_to_removed_139831882678576 q0,q1,q2 { id q2; id q1; id q0; }
+gate cx_to_removed q0,q1 { id q1; id q0; }
+gate cx_to_removed_139831882679488 q0,q1 { id q0; id q0; }
+gate ccx_to_removed_139831885714912 q0,q1,q2 { id q2; id q1; id q0; }
+gate ccx_to_x q0,q1,q2 { id q0; id q2; x q0; }
+gate cx_to_x_139831882640544 q0,q1 { id q0; x q0; }
+gate ccx_to_removed_139831886737168 q0,q1,q2 { id q0; id q2; id q0; }
+gate cx_to_removed_139831885715152 q0,q1 { id q0; id q0; }
+gate ccx_to_removed_139831885716688 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139831886275248 q0,q1,q2 { id q0; id q0; id q0; }
+gate ccx_to_removed_139831885628656 q0,q1,q2 { id q0; id q0; id q2; }
+gate ccx_to_removed_139831882678768 q0,q1,q2 { id q0; id q0; id q2; }
+gate ccx_to_removed_139831882681840 q0,q1,q2 { id q0; id q0; id q0; }
+gate ccx_to_x_139831885282896 q0,q1,q2 { id q0; id q0; x q0; }
+gate ccx_to_x_139831887319776 q0,q1,q2 { id q0; id q0; x q2; }
+gate cx_to_x_139831882976752 q0,q1 { id q1; ry(2.462478) q0; }
+gate ccx_to_x_139831882974208 q0,q1,q2 { id q0; id q0; x q2; }
+gate ccx_to_x_139831882327616 q0,q1,q2 { id q0; id q0; x q0; }
+gate ccx_to_removed_139831882328528 q0,q1,q2 { id q0; id q0; id q0; }
+gate ccx_to_removed_139831882975984 q0,q1,q2 { id q0; id q0; id q2; }
+gate ccx_to_removed_139831886275632 q0,q1,q2 { id q0; id q0; id q2; }
+gate ccx_to_removed_139831887577152 q0,q1,q2 { id q0; id q0; id q0; }
+gate ccx_to_removed_139831887580464 q0,q1,q2 { id q0; id q0; id q0; }
+gate ccx_to_removed_139831887579600 q0,q1,q2 { id q0; id q0; id q2; }
+gate ccx_to_removed_139831887578160 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831887579360 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139832602799600 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602798688 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602799888 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602797056 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602796432 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602797584 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832603873392 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139831882638000 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_x_139831882638720 q0,q1,q2 { id q0; id q1; x q1; }
+gate ccx_to_removed_139831882641312 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882639872 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882976464 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831887021392 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_x_139831887023456 q0,q1,q2 { id q0; id q1; x q1; }
+gate ccx_to_removed_139832602796192 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882958688 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882959072 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882957632 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882960272 q0,q1,q2 { id q0; id q0; id q2; }
+gate ccx_to_removed_139831883450400 q0,q1,q2 { id q0; id q0; id q0; }
+gate ccx_to_x_139831883448432 q0,q1,q2 { id q0; id q0; x q0; }
+gate ccx_to_x_139831883450208 q0,q1,q2 { id q0; id q0; x q2; }
+gate ccx_to_removed_139831883451024 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831883450976 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139831883448816 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831887022016 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602679664 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602679568 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602678848 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602681200 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602679136 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139832602680720 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_x_139831887149952 q0,q1,q2 { id q0; id q1; x q1; }
+gate ccx_to_x_139831887149520 q0,q1,q2 { id q0; id q1; x q2; }
+gate ccx_to_cx q0,q1,q2 { id q0; cx q1,q2; }
+gate ccx_to_x_139831886808880 q0,q1,q2 { id q0; id q1; x q2; }
+gate ccx_to_x_139831886807296 q0,q1,q2 { id q0; id q1; x q1; }
+gate ccx_to_removed_139832602419600 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602421376 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602422240 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602421856 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_x_139832602678944 q0,q1,q2 { id q0; id q0; x q2; }
+gate ccx_to_x_139831882546912 q0,q1,q2 { id q0; id q0; x q0; }
+gate ccx_to_removed_139831882544464 q0,q1,q2 { id q0; id q0; id q0; }
+gate ccx_to_removed_139831882545280 q0,q1,q2 { id q0; id q0; id q2; }
+gate ccx_to_removed_139831882545424 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832593175408 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139832593177616 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832593175600 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832593174832 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832593178096 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832602419744 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831885905200 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831885903232 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139831882543984 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_x_139831882289104 q0,q1,q2 { id q0; id q1; x q1; }
+gate ccx_to_removed_139831882286992 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882286560 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882285888 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882285360 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_x_139832593177088 q0,q1,q2 { id q0; id q1; x q1; }
+gate ccx_to_removed_139832603317440 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139839357472720 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831882879424 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139831885683968 q0,q1,q2 { id q0; id q1; id q2; }
+gate ccx_to_removed_139832603564976 q0,q1,q2 { id q0; id q0; id q2; }
+gate ccx_to_removed_139832603562288 q0,q1,q2 { id q0; id q0; id q0; }
+gate ccx_to_removed_139831882381296 q0,q1,q2 { id q2; id q1; id q0; }
+gate cx_to_removed_139831882382784 q0,q1 { id q0; id q0; }
+gate ccx_to_removed_139831882379616 q0,q1,q2 { id q2; id q1; id q0; }
+gate cx_to_x_139831886497296 q0,q1 { id q0; x q0; }
+gate ccx_to_removed_139831886498880 q0,q1,q2 { id q0; id q2; id q0; }
+gate cx_to_removed_139831885865264 q0,q1 { id q0; id q0; }
+gate ccx_to_removed_139832593560912 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139832593559760 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139832593562304 q0,q1,q2 { id q1; id q0; id q2; }
+gate ccx_to_removed_139831886215296 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139831886214528 q0,q1,q2 { id q0; id q2; id q1; }
+gate ccx_to_removed_139832603041360 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139832603040640 q0,q1,q2 { id q0; id q2; id q0; }
+gate ccx_to_removed_139832603038480 q0,q1,q2 { id q1; id q2; id q0; }
+gate ccx_to_removed_139832603041120 q0,q1,q2 { id q0; id q0; id q2; }
+gate ccx_to_removed_139832603039296 q0,q1,q2 { id q1; id q2; id q0; }
+gate ccx_to_removed_139832603041744 q0,q1,q2 { id q1; id q2; id q0; }
+gate ccx_to_removed_139831885867952 q0,q1,q2 { id q0; id q0; id q0; }
+gate ccx_to_removed_139832593899632 q0,q1,q2 { id q1; id q2; id q0; }
+qreg w[5];
+qreg p[6];
+qreg h[1];
+qreg e[1];
+qreg n_phi[1];
+qreg n_a[1];
+qreg n_b[1];
+qreg w_h[1];
+qreg w_phi[1];
+qreg w_a[1];
+qreg w_b[1];
+creg w_cl[5];
+creg p0_cl[3];
+creg p1_cl[3];
+creg h0_cl[1];
+creg e_cl[1];
+creg nphi_cl[1];
+creg na_cl[1];
+creg nb_cl[1];
+creg wh_cl[1];
+creg wphi_cl[1];
+creg wa_cl[1];
+creg wb_cl[1];
+x p[1];
+x p[2];
+cx_to_x p[2],p[0];
+ccx_to_removed p[0],p[1],w[1];
+x p[2];
+ccx_to_removed_139831882678576 p[2],w[1],w[0];
+cx_to_removed p[5],p[3];
+cx_to_removed_139831882679488 w[0],n_phi[0];
+x n_phi[0];
+ccx_to_removed_139831885714912 p[2],w[1],w[0];
+ccx_to_removed p[0],p[1],w[1];
+x p[0];
+x p[2];
+ccx_to_x p[0],p[2],w[0];
+cx_to_x_139831882640544 w[0],n_a[0];
+x n_a[0];
+ccx_to_x p[0],p[2],w[0];
+x p[0];
+ccx_to_removed_139831886737168 p[0],p[2],w[0];
+cx_to_removed_139831885715152 w[0],n_b[0];
+ccx_to_removed_139831885716688 p[0],p[2],w[0];
+ccx_to_removed_139831886275248 n_phi[0],n_a[0],w[0];
+ccx_to_removed_139831885628656 n_b[0],w[0],w[1];
+cx_to_removed w[1],e[0];
+ccx_to_removed_139831882678768 n_b[0],w[0],w[1];
+x n_b[0];
+ccx_to_removed_139831882681840 n_phi[0],n_a[0],w[0];
+x n_a[0];
+ccx_to_x_139831885282896 n_phi[0],n_a[0],w[0];
+ccx_to_x_139831887319776 n_b[0],w[0],w[1];
+cx_to_x_139831882976752 w[1],e[0];
+ccx_to_x_139831882974208 n_b[0],w[0],w[1];
+ccx_to_x_139831882327616 n_phi[0],n_a[0],w[0];
+x n_a[0];
+x n_phi[0];
+ccx_to_removed_139831882328528 n_phi[0],n_a[0],w[0];
+ccx_to_removed_139831882975984 n_b[0],w[0],w[1];
+cx_to_removed w[1],e[0];
+ccx_to_removed_139831886275632 n_b[0],w[0],w[1];
+x n_b[0];
+ccx_to_removed_139831887577152 n_phi[0],n_a[0],w[0];
+x n_phi[0];
+ccx_to_removed_139831887580464 n_phi[0],n_a[0],w[0];
+ccx_to_removed_139831887579600 n_b[0],w[0],w[1];
+ccx_to_removed_139831887578160 p[0],p[1],w[4];
+x p[2];
+ccx_to_removed_139831887579360 p[2],w[4],w[2];
+ccx_to_removed_139832602799600 w[1],w[2],w[3];
+ccx_to_removed_139832602798688 p[0],p[1],w[4];
+ccx_to_removed_139832602799888 e[0],w[3],w[4];
+cx_to_removed w[4],h[0];
+ccx_to_removed_139832602797056 e[0],w[3],w[4];
+ccx_to_removed_139832602796432 w[1],w[2],w[3];
+ccx_to_removed_139832602797584 p[0],p[1],w[4];
+ccx_to_removed_139832603873392 p[2],w[4],w[2];
+ccx_to_removed_139831882638000 p[0],p[1],w[4];
+x p[0];
+x p[2];
+ccx_to_x_139831882638720 p[0],p[2],w[2];
+ccx_to_removed_139831882641312 w[1],w[2],w[3];
+ccx_to_removed_139831882639872 e[0],w[3],w[4];
+cx_to_removed w[4],h[0];
+ccx_to_removed_139831882976464 e[0],w[3],w[4];
+ccx_to_removed_139831887021392 w[1],w[2],w[3];
+ccx_to_x_139831887023456 p[0],p[2],w[2];
+x p[0];
+ccx_to_removed p[0],p[2],w[2];
+ccx_to_removed_139832602796192 w[1],w[2],w[3];
+ccx_to_removed_139831882958688 e[0],w[3],w[4];
+cx_to_removed w[4],h[0];
+ccx_to_removed_139831882959072 e[0],w[3],w[4];
+ccx_to_removed_139831882957632 w[1],w[2],w[3];
+ccx_to_removed_139831882960272 n_b[0],w[0],w[1];
+x n_b[0];
+ccx_to_removed_139831883450400 n_phi[0],n_a[0],w[0];
+x n_a[0];
+ccx_to_x_139831883448432 n_phi[0],n_a[0],w[0];
+ccx_to_x_139831883450208 n_b[0],w[0],w[1];
+ccx_to_removed p[0],p[2],w[2];
+ccx_to_removed_139831883451024 p[0],p[1],w[4];
+x p[2];
+ccx_to_removed_139831883450976 p[2],w[4],w[2];
+ccx_to_removed_139831883448816 w[1],w[2],w[3];
+ccx_to_removed_139831887022016 p[0],p[1],w[4];
+ccx_to_removed_139832602679664 e[0],w[3],w[4];
+cx_to_removed w[4],h[0];
+ccx_to_removed_139832602679568 e[0],w[3],w[4];
+ccx_to_removed_139832602678848 w[1],w[2],w[3];
+ccx_to_removed_139832602681200 p[0],p[1],w[4];
+ccx_to_removed_139832602679136 p[2],w[4],w[2];
+ccx_to_removed_139832602680720 p[0],p[1],w[4];
+x p[0];
+x p[2];
+ccx_to_x_139831887149952 p[0],p[2],w[2];
+ccx_to_x_139831887149520 w[1],w[2],w[3];
+ccx_to_cx w[3],e[0],w[4];
+cry(pi) w[4],h[0];
+ccx_to_cx w[3],e[0],w[4];
+ccx_to_x_139831886808880 w[1],w[2],w[3];
+ccx_to_x_139831886807296 p[0],p[2],w[2];
+x p[0];
+ccx_to_removed p[0],p[2],w[2];
+ccx_to_removed_139832602419600 w[1],w[2],w[3];
+ccx_to_removed_139832602421376 e[0],w[3],w[4];
+cx_to_removed w[4],h[0];
+ccx_to_removed_139832602422240 e[0],w[3],w[4];
+ccx_to_removed_139832602421856 w[1],w[2],w[3];
+ccx_to_x_139832602678944 n_b[0],w[0],w[1];
+ccx_to_x_139831882546912 n_phi[0],n_a[0],w[0];
+x n_a[0];
+x n_phi[0];
+ccx_to_removed_139831882544464 n_phi[0],n_a[0],w[0];
+ccx_to_removed_139831882545280 n_b[0],w[0],w[1];
+ccx_to_removed p[0],p[2],w[2];
+ccx_to_removed_139831882545424 p[0],p[1],w[4];
+x p[2];
+ccx_to_removed_139832593175408 p[2],w[4],w[2];
+ccx_to_removed_139832593177616 w[1],w[2],w[3];
+ccx_to_removed_139832593175600 p[0],p[1],w[4];
+ccx_to_removed_139832593174832 e[0],w[3],w[4];
+cx_to_removed w[4],h[0];
+ccx_to_removed_139832593178096 e[0],w[3],w[4];
+ccx_to_removed_139832602419744 w[1],w[2],w[3];
+ccx_to_removed_139831885905200 p[0],p[1],w[4];
+ccx_to_removed_139831885903232 p[2],w[4],w[2];
+ccx_to_removed_139831882543984 p[0],p[1],w[4];
+x p[0];
+x p[2];
+ccx_to_x_139831882289104 p[0],p[2],w[2];
+ccx_to_removed_139831882286992 w[1],w[2],w[3];
+ccx_to_removed_139831882286560 e[0],w[3],w[4];
+cx_to_removed w[4],h[0];
+ccx_to_removed_139831882285888 e[0],w[3],w[4];
+ccx_to_removed_139831882285360 w[1],w[2],w[3];
+ccx_to_x_139832593177088 p[0],p[2],w[2];
+x p[0];
+ccx_to_removed p[0],p[2],w[2];
+ccx_to_removed_139832603317440 w[1],w[2],w[3];
+ccx_to_removed_139839357472720 e[0],w[3],w[4];
+cx_to_removed w[4],h[0];
+ccx_to_removed_139831882879424 e[0],w[3],w[4];
+x h[0];
+cx h[0],e[0];
+x e[0];
+x h[0];
+ccx_to_removed_139831885683968 w[1],w[2],w[3];
+ccx_to_removed_139832603564976 n_b[0],w[0],w[1];
+ccx_to_removed_139832603562288 n_phi[0],n_a[0],w[0];
+x n_phi[0];
+ccx_to_removed p[0],p[2],w[2];
+ccx_to_removed p[0],p[1],w[1];
+x p[2];
+ccx_to_removed_139831882381296 p[2],w[1],w[0];
+cx_to_removed_139831882382784 w[0],n_phi[0];
+x n_phi[0];
+ccx_to_removed_139831882379616 p[2],w[1],w[0];
+ccx_to_removed p[0],p[1],w[1];
+x p[0];
+x p[2];
+ccx_to_x p[0],p[2],w[0];
+cx_to_x_139831886497296 w[0],n_a[0];
+x n_a[0];
+ccx_to_x p[0],p[2],w[0];
+x p[0];
+ccx_to_removed_139831886498880 p[0],p[2],w[0];
+cx_to_removed_139831885865264 w[0],n_b[0];
+x n_b[0];
+ccx_to_removed_139832593560912 p[0],p[2],w[0];
+ccx_to_cx p[2],h[0],p[3];
+x p[2];
+ccx_to_removed_139832593559760 h[0],p[2],w[0];
+ccx_to_removed w[0],p[1],w[1];
+ccx_to_removed_139832593562304 w[1],p[0],p[5];
+ccx_to_removed w[0],p[1],w[1];
+ccx_to_removed_139831886215296 h[0],p[2],w[0];
+x p[1];
+x p[2];
+ccx_to_removed_139831886214528 h[0],p[5],p[2];
+ccx_to_removed_139832603041360 h[0],p[5],w[0];
+cx_to_removed w[0],p[4];
+cx_to_removed w[0],p[3];
+ccx_to_removed_139832603040640 h[0],p[5],w[0];
+x p[3];
+x p[4];
+ccx_to_removed_139832603038480 p[4],p[5],w[0];
+ccx_to_removed_139832603041120 h[0],w[0],p[1];
+ccx_to_removed_139832603039296 p[4],p[5],w[0];
+ccx_to_removed_139832603041744 p[3],p[5],w[0];
+ccx_to_removed_139831885867952 h[0],w[0],p[0];
+cx_to_x p[2],p[0];
+ccx_to_removed_139832593899632 p[3],p[5],w[0];
+x p[3];
+x p[4];
+cx_to_removed p[5],p[3];
+measure w[0] -> w_cl[0];
+measure w[1] -> w_cl[1];
+measure w[2] -> w_cl[2];
+measure w[3] -> w_cl[3];
+measure w[4] -> w_cl[4];
+measure p[0] -> p0_cl[0];
+measure p[1] -> p0_cl[1];
+measure p[2] -> p0_cl[2];
+measure p[3] -> p1_cl[0];
+measure p[4] -> p1_cl[1];
+measure p[5] -> p1_cl[2];
+measure h[0] -> h0_cl[0];
+measure e[0] -> e_cl[0];
+measure n_phi[0] -> nphi_cl[0];
+measure n_a[0] -> na_cl[0];
+measure n_b[0] -> nb_cl[0];
+measure w_h[0] -> wh_cl[0];
+measure w_phi[0] -> wphi_cl[0];
+measure w_a[0] -> wa_cl[0];
+measure w_b[0] -> wb_cl[0];
